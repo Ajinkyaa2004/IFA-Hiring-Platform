@@ -17,14 +17,25 @@ const app = express();
 connectDB();
 
 // Middleware - CORS
+const allowedOrigins = [
+  process.env.FRONTEND_URL,              // Frontend URL from environment
+  'http://localhost:5173',               // Local development
+  'http://localhost:3000',               // Alternative local port
+  'http://127.0.0.1:5173',               // Local IP development
+  'http://127.0.0.1:3000'                // Local IP alternative
+].filter(Boolean);
+
 app.use(cors({
-  origin: [
-    'https://skillquest-neon.vercel.app',  // ✅ Your production frontend
-    'http://localhost:5173',               // Local development
-    'http://localhost:3000',               // Alternative local port
-    'http://127.0.0.1:5173',               // Local IP development
-    'http://127.0.0.1:3000'                // Local IP alternative
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
