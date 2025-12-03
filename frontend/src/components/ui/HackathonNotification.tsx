@@ -31,7 +31,7 @@ export const HackathonNotification: React.FC = () => {
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"
             >
-                <div className="max-w-7xl mx-auto px-4 py-2 pointer-events-auto">
+                <div className="max-w-7xl mx-auto px-2 sm:px-4 py-1 sm:py-2 pointer-events-auto">
                     <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 rounded-lg shadow-xl border border-white/20">
                         {/* Animated background pattern */}
                         <div className="absolute inset-0 opacity-20">
@@ -52,8 +52,8 @@ export const HackathonNotification: React.FC = () => {
                             />
                         </div>
 
-                        <div className="relative flex items-center justify-between gap-3 px-4 py-2.5">
-                            <div className="flex items-center gap-3 flex-1">
+                        <div className="relative flex items-center justify-between gap-2 sm:gap-3 px-2 sm:px-4 py-1.5 sm:py-2.5">
+                            <div className="flex items-center gap-2 sm:gap-3 flex-1">
                                 {/* Animated Icon */}
                                 <motion.div
                                     animate={{
@@ -65,7 +65,7 @@ export const HackathonNotification: React.FC = () => {
                                         repeat: Infinity,
                                         repeatType: 'reverse',
                                     }}
-                                    className="flex-shrink-0"
+                                    className="flex-shrink-0 hidden sm:block"
                                 >
                                     <div className="w-9 h-9 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
                                         <Zap className="w-5 h-5 text-white" />
@@ -74,14 +74,15 @@ export const HackathonNotification: React.FC = () => {
 
                                 {/* Content */}
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <h3 className="text-white font-bold text-base md:text-lg flex items-center gap-2">
-                                            <Calendar className="w-4 h-4" />
-                                            GAME THEORY HACKATHON SCHEDULE
+                                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                        <h3 className="text-white font-bold text-xs sm:text-sm md:text-base flex items-center gap-1 sm:gap-2">
+                                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                                            <span className="hidden xs:inline">GAME THEORY HACKATHON SCHEDULE</span>
+                                            <span className="xs:hidden">HACKATHON</span>
                                         </h3>
-                                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs font-semibold border border-white/30">
-                                            <Clock className="w-3 h-3" />
-                                            On Dec 3, 2025
+                                        <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-[10px] sm:text-xs font-semibold border border-white/30">
+                                            <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                            Dec 3, 2025
                                         </span>
                                     </div>
                                     <p className="text-white/90 text-xs mt-0.5 hidden sm:block">
@@ -95,10 +96,10 @@ export const HackathonNotification: React.FC = () => {
                                 whileHover={{ scale: 1.1, rotate: 90 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={handleDismiss}
-                                className="flex-shrink-0 w-7 h-7 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 transition-colors"
+                                className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 transition-colors"
                                 aria-label="Dismiss notification"
                             >
-                                <X className="w-4 h-4 text-white" />
+                                <X className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                             </motion.button>
                         </div>
 

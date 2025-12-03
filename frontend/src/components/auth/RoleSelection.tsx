@@ -287,7 +287,7 @@ export const RoleSelection: React.FC = () => {
 
       <div className="w-full max-w-6xl">
         {/* Header */}
-        <div className="text-center mb-16 -mt-8 relative">
+        <div className="text-center mb-16 mt-4 sm:mt-8 md:mt-12 relative">
           {/* Sparkles around header */}
           <Sparkle delay={0} x="20%" y="10%" />
           <Sparkle delay={0.5} x="80%" y="15%" />
@@ -297,7 +297,7 @@ export const RoleSelection: React.FC = () => {
           <Sparkle delay={2.5} x="45%" y="90%" />
 
           <h1
-            className="text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-game-purple-700 via-game-purple-500 to-game-purple-400 
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-game-purple-700 via-game-purple-500 to-game-purple-400 
              animate-gradient-x drop-shadow-[0_0_25px_rgba(168,85,247,0.3)] tracking-tight select-none"
           >
             IFA SkillQuest
