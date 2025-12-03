@@ -258,11 +258,11 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       optimalMoves: 18,
       blocks: [
         { id: 1, row: 2, col: 3, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 5, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 2, row: 0, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
         { id: 4, row: 3, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 6, row: 3, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 5, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 3, col: 1, length: 2, isHorizontal: true, isTarget: false },
         { id: 7, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
         { id: 8, row: 5, col: 0, length: 3, isHorizontal: true, isTarget: false },
       ],
@@ -543,7 +543,7 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
         { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
         { id: 3, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
         { id: 4, row: 0, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 1, row: 3, col: 1, length: 2, isHorizontal: false, isTarget: false }, // Corrected ID 1 to 5
+        { id: 0, row: 0, col: 0, length: 0, isHorizontal: false, isTarget: false }, // Corrected ID 1 to 5
         { id: 0, row: 0, col: 0, length: 0, isHorizontal: false, isTarget: false },
         { id: 6, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
         { id: 7, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false },
@@ -571,7 +571,7 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
     },
   ];
 
-  const DEV_MODE = true;
+  const DEV_MODE = false;
 
   const selectedLevels = useMemo(() => {
     if (DEV_MODE) {
@@ -1039,27 +1039,7 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
           </motion.div>
         </motion.div>
 
-        {/* Level Progress */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.35 }}
-          className="mb-6 flex items-center gap-3 max-w-2xl mx-auto"
-        >
-          {selectedLevels.map((level, index) => (
-            <div key={index} className="flex-1">
-              <div
-                className={`h-3 rounded-full transition-all duration-500 ${index < currentLevel
-                  ? 'bg-gradient-to-r from-green-500 to-green-600 shadow-md'
-                  : index === currentLevel
-                    ? 'bg-gradient-to-r from-[#8558ed] to-[#b18aff] shadow-lg'
-                    : 'bg-gray-300'
-                  }`}
-              />
-              <p className="mt-1 text-center text-xs font-medium text-[#030303]/60">{level.name}</p>
-            </div>
-          ))}
-        </motion.div>
+        {/* Level Progress Removed */}
 
         {/* Level Complete Animation */}
         <AnimatePresence>
