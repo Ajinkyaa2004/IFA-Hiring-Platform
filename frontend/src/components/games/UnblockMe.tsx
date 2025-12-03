@@ -46,6 +46,7 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [tempPosition, setTempPosition] = useState<{ row: number; col: number } | null>(null);
   const [levelStartTime, setLevelStartTime] = useState<number>(TOTAL_TIME);
+  const [lastLevelScore, setLastLevelScore] = useState(0);
 
   const gridRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -103,17 +104,16 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       difficulty: 'Easy',
       optimalMoves: 11,
       blocks: [
-        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 0, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 9, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 10, row: 3, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 11, row: 4, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 3, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 3, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 3, col: 1, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 2, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false }
       ],
     },
     {
@@ -121,13 +121,16 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       difficulty: 'Easy',
       optimalMoves: 8,
       blocks: [
-        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 2, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 4, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 5, row: 3, col: 3, length: 3, isHorizontal: true, isTarget: false },
-        { id: 6, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 7, row: 5, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 3, col: 1, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 2, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false }
       ],
     },
     {
@@ -136,13 +139,15 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       optimalMoves: 10,
       blocks: [
         { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 1, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 5, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 2, row: 0, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 3, row: 0, col: 3, length: 3, isHorizontal: true, isTarget: false },
+        { id: 4, row: 3, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
         { id: 6, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
         { id: 7, row: 4, col: 0, length: 3, isHorizontal: true, isTarget: false },
-        { id: 8, row: 5, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 3, col: 4, length: 3, isHorizontal: false, isTarget: false },
+        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 3, col: 0, length: 2, isHorizontal: true, isTarget: false }
       ],
     },
     {
@@ -150,15 +155,16 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       difficulty: 'Easy',
       optimalMoves: 12,
       blocks: [
-        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 1, length: 3, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 3, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 6, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 7, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 3, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false }
       ],
     },
     {
@@ -166,13 +172,16 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       difficulty: 'Easy',
       optimalMoves: 9,
       blocks: [
-        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 2, length: 3, isHorizontal: false, isTarget: false },
-        { id: 4, row: 3, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 0, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false },
-        { id: 7, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 2, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 4, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 5, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 3, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 4, col: 2, length: 3, isHorizontal: true, isTarget: false }
       ],
     },
     {
@@ -211,15 +220,16 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       difficulty: 'Easy',
       optimalMoves: 13,
       blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 5, row: 3, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 6, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 7, row: 3, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 5, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 2, col: 0, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 0, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 1, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false }
       ],
     },
     // Hard Levels (11-20)
@@ -279,14 +289,15 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       optimalMoves: 17,
       blocks: [
         { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 1, length: 3, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 0, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 6, row: 3, col: 4, length: 3, isHorizontal: false, isTarget: false },
-        { id: 7, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 2, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false }
       ],
     },
     {
@@ -294,16 +305,16 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       difficulty: 'Hard',
       optimalMoves: 19,
       blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 2, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
-        { id: 5, row: 0, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 7, row: 3, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 4, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 0, length: 0, isHorizontal: false, isTarget: false },
+        { id: 5, row: 4, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
         { id: 8, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 5, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 9, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false }
       ],
     },
     {
@@ -311,11 +322,11 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       difficulty: 'Hard',
       optimalMoves: 20,
       blocks: [
-        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
+        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 1, length: 3, isHorizontal: false, isTarget: false },
-        { id: 4, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 0, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 2, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 0, col: 3, length: 3, isHorizontal: false, isTarget: false },
         { id: 6, row: 3, col: 4, length: 3, isHorizontal: false, isTarget: false },
         { id: 7, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
         { id: 8, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false },
@@ -330,15 +341,16 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       blocks: [
         { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 2, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 4, row: 1, col: 2, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
         { id: 5, row: 0, col: 3, length: 2, isHorizontal: false, isTarget: false },
         { id: 6, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 3, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
         { id: 8, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 3, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 10, row: 4, col: 1, length: 3, isHorizontal: true, isTarget: false },
         { id: 11, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false },
+
       ],
     },
     {
@@ -348,15 +360,15 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       blocks: [
         { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 2, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
         { id: 5, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 6, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 6, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
         { id: 7, row: 3, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 8, row: 4, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 8, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
         { id: 9, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 11, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 3, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 11, row: 4, col: 1, length: 3, isHorizontal: true, isTarget: false },
         { id: 12, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
       ],
     },
@@ -366,15 +378,15 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       optimalMoves: 23,
       blocks: [
         { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 1, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 2, row: 2, col: 1, length: 4, isHorizontal: false, isTarget: false },
+        { id: 3, row: 1, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
         { id: 5, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
-        { id: 6, row: 3, col: 0, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 3, col: 0, length: 2, isHorizontal: false, isTarget: false },
         { id: 7, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
         { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 3, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false },
         { id: 11, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
       ],
     },
@@ -385,21 +397,186 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       blocks: [
         { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 0, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
         { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
         { id: 5, row: 2, col: 0, length: 2, isHorizontal: false, isTarget: false },
         { id: 6, row: 0, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 7, row: 1, col: 4, length: 3, isHorizontal: false, isTarget: false },
-        { id: 8, row: 3, col: 5, length: 3, isHorizontal: false, isTarget: false },
-        { id: 9, row: 3, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 7, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
+        { id: 8, row: 2, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 9, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
         { id: 10, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 11, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 12, row: 5, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 11, row: 4, col: 0, length: 0, isHorizontal: true, isTarget: false },
+        { id: 12, row: 5, col: 4, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 21',
+      difficulty: 'Hard',
+      optimalMoves: 25,
+      blocks: [
+        // The Target Car (Horizontal, Length 2, must exit from the right side)
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+
+        // Blocking Vehicles
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false }, // Vertical
+        { id: 3, row: 0, col: 5, length: 3, isHorizontal: false, isTarget: false }, // Vertical
+        { id: 4, row: 3, col: 4, length: 2, isHorizontal: false, isTarget: false }, // Vertical
+        { id: 5, row: 1, col: 2, length: 3, isHorizontal: true, isTarget: false }, // Horizontal
+        { id: 6, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false }, // Horizontal
+        { id: 7, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false }, // Horizontal
+        { id: 8, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false }, // Horizontal
+        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false }, // Horizontal
+        { id: 10, row: 5, col: 4, length: 2, isHorizontal: true, isTarget: false }  // Horizontal
+      ],
+    },
+    {
+      name: 'Level 22',
+      difficulty: 'Hard',
+      optimalMoves: 25,
+      blocks: [
+        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 4, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 3, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 5, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false }
+      ],
+    },
+    {
+      name: 'Level 23',
+      difficulty: 'Hard',
+      optimalMoves: 25,
+      blocks: [
+
+        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 4, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 0, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 3, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 7, row: 4, col: 3, length: 0, isHorizontal: false, isTarget: false },
+        { id: 8, row: 5, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 0, col: 4, length: 2, isHorizontal: false, isTarget: false }
+      ],
+    },
+    {
+      name: 'Level 24',
+      difficulty: 'Hard',
+      optimalMoves: 25,
+      blocks: [
+
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 2, col: 0, length: 0, isHorizontal: true, isTarget: false },
+        { id: 10, row: 4, col: 0, length: 2, isHorizontal: false, isTarget: false }
+      ],
+    },
+    {
+      name: 'Level 25',
+      difficulty: 'Hard',
+      optimalMoves: 25,
+      blocks: [
+
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 1, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 4, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 3, col: 0, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 8, row: 5, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 2, col: 2, length: 0, isHorizontal: true, isTarget: false },
+        { id: 10, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false }
+      ],
+    },
+    {
+      name: 'Level 26',
+      difficulty: 'Hard',
+      optimalMoves: 25,
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 4, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 4, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 6, row: 0, col: 0, length: 0, isHorizontal: false, isTarget: false },
+        { id: 7, row: 0, col: 3, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 1, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 3, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false }
+      ],
+    },
+    {
+      name: 'Level 27',
+      difficulty: 'Hard',
+      optimalMoves: 25,
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 1, col: 0, length: 0, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false }
+      ],
+    },
+    {
+      name: 'Level 28',
+      difficulty: 'Hard',
+      optimalMoves: 25,
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 4, row: 0, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 1, row: 3, col: 1, length: 2, isHorizontal: false, isTarget: false }, // Corrected ID 1 to 5
+        { id: 0, row: 0, col: 0, length: 0, isHorizontal: false, isTarget: false },
+        { id: 6, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 0, row: 0, col: 0, length: 0, isHorizontal: true, isTarget: false },
+        { id: 10, row: 1, col: 5, length: 2, isHorizontal: false, isTarget: false }
+      ],
+    },
+    {
+      name: 'Level 29',
+      difficulty: 'Hard',
+      optimalMoves: 25,
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 1, col: 0, length: 0, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false }
       ],
     },
   ];
 
+  const DEV_MODE = true;
+
   const selectedLevels = useMemo(() => {
+    if (DEV_MODE) {
+      return allLevels;
+    }
     if (isTrialMode) {
       // Trial mode: Pick 3 random levels from all 20
       const shuffled = [...allLevels].sort(() => Math.random() - 0.5);
@@ -466,23 +643,19 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
     return true;
   };
 
-  const calculateLevelScore = (levelIndex: number, movesUsed: number, timeSpent: number) => {
+  const calculateLevelScore = (levelIndex: number, moves: number, timeSpent: number) => {
     const level = selectedLevels[levelIndex];
+    if (!level) return 0;
+
     const optimal = level.optimalMoves;
-    const extraMoves = Math.max(0, movesUsed - optimal);
+    let score = 5; // Base score for completing the level
 
-    // New unlimited scoring formula
-    const baseScore = 100; // Base score per level
-    const levelMultiplier = 1.0 + (levelIndex * 0.1); // Progressive difficulty reward
-    const perfectBonus = movesUsed <= optimal ? 50 : 0; // Bonus for perfect execution
-    const movePenalty = extraMoves * 10; // Higher penalty for excess moves
+    // Deduct 1 point for every extra move
+    if (moves > optimal) {
+      score -= (moves - optimal);
+    }
 
-    const expectedTime = level.difficulty === 'Easy' ? 60 : 90;
-    const extraTime = Math.max(0, timeSpent - expectedTime);
-    const timePenalty = Math.floor(extraTime / 15); // Moderate time pressure
-
-    const levelScore = (baseScore * levelMultiplier) + perfectBonus - movePenalty - timePenalty;
-    return Math.max(Math.round(levelScore), 20); // Minimum 20 points per level
+    return score;
   };
 
   const calculateTotalScore = () => {
@@ -515,6 +688,9 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       const newLevelTimes = [...levelTimes];
       newLevelTimes[currentLevel] = timeSpent;
       setLevelTimes(newLevelTimes);
+
+      const levelScoreVal = calculateLevelScore(currentLevel, moves, timeSpent);
+      setLastLevelScore(levelScoreVal);
 
       const newScore = calculateTotalScore();
       setScore(newScore);
@@ -737,6 +913,41 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
           </motion.p>
         </motion.div>
 
+        {DEV_MODE && (
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={() => {
+                setLevelComplete(true);
+                setPuzzlesCompleted((prev) => prev + 1);
+
+                const newLevelMoves = [...levelMoves];
+                newLevelMoves[currentLevel] = moves;
+                setLevelMoves(newLevelMoves);
+
+                const timeSpent = levelStartTime - timeRemaining;
+                const newLevelTimes = [...levelTimes];
+                newLevelTimes[currentLevel] = timeSpent;
+                setLevelTimes(newLevelTimes);
+
+                const levelScoreVal = calculateLevelScore(currentLevel, moves, timeSpent);
+                setLastLevelScore(levelScoreVal);
+
+                const newScore = calculateTotalScore();
+                setScore(newScore);
+
+                if (currentLevel < selectedLevels.length - 1) {
+                  setTimeout(() => loadLevel(currentLevel + 1), 2500);
+                } else {
+                  setAllLevelsComplete(true);
+                }
+              }}
+              className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-600 transition-colors z-50 relative"
+            >
+              Debug: Win Level
+            </button>
+          </div>
+        )}
+
         {/* Stats Cards */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -776,8 +987,27 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
                 <Star className="w-5 h-5 text-white" />
               </motion.div>
               <div>
-                <div className="text-xs text-[#030303]/60 font-medium">Score</div>
+                <div className="text-xs text-[#030303]/60 font-medium">Total Score</div>
                 <div className="text-2xl font-bold text-green-600">{score}</div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.05, y: -2 }}
+            className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+          >
+            <div className="flex items-center gap-3">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="bg-gradient-to-tr from-yellow-500 to-orange-500 w-10 h-10 rounded-full flex items-center justify-center"
+              >
+                <Zap className="w-5 h-5 text-white" />
+              </motion.div>
+              <div>
+                <div className="text-xs text-[#030303]/60 font-medium">Level Score</div>
+                <div className="text-2xl font-bold text-orange-600">{lastLevelScore}</div>
               </div>
             </div>
           </motion.div>
@@ -798,7 +1028,7 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
                 <div className="text-xs text-[#030303]/60 font-medium">Moves</div>
                 <div className="text-2xl font-bold text-blue-600">
                   {moves}
-                  {moves > selectedLevels[currentLevel]?.optimalMoves && (
+                  {levelComplete && moves > selectedLevels[currentLevel]?.optimalMoves && (
                     <span className="text-lg text-orange-500 ml-1">
                       (+{moves - selectedLevels[currentLevel]?.optimalMoves})
                     </span>
