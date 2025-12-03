@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { getProfileByUserId, getAssessmentByUserId, saveAssessment } from '@/lib/storage';
 import { Assessment, GameType } from '@/types';
-import { Trophy, CheckCircle, Clock, LogOut, Sparkles, Zap, Star, Target, Flame, Flag, XCircle, Play, Lock, Bomb, Car, Droplet, Rocket, Dumbbell } from 'lucide-react';
+import { Trophy, CheckCircle, Clock, LogOut, Sparkles, Zap, Star, Target, Flame, Flag, XCircle, Play, Lock, Bomb, Car, Droplet, Rocket, Dumbbell, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -196,12 +196,14 @@ export const AssessmentDashboard: React.FC = () => {
               minesweeper: null,
               'unblock-me': null,
               'water-capacity': null,
+              'question-game': null,
             },
             totalScore: 0,
             trialMode: {
               minesweeper: false,
               'unblock-me': false,
               'water-capacity': false,
+              'question-game': false,
             },
           };
           // ✅ Save to MongoDB (now async)
@@ -237,6 +239,9 @@ export const AssessmentDashboard: React.FC = () => {
     if (gameType === 'water-capacity') {
       return assessment.games.minesweeper !== null;
     }
+    if (gameType === 'question-game') {
+      return assessment.games['water-capacity'] !== null;
+    }
     return false;
   };
 
@@ -249,6 +254,9 @@ export const AssessmentDashboard: React.FC = () => {
     }
     if (gameType === 'water-capacity') {
       return assessment.games.minesweeper !== null;
+    }
+    if (gameType === 'question-game') {
+      return assessment.games['water-capacity'] !== null;
     }
     return false;
   };
@@ -274,11 +282,13 @@ export const AssessmentDashboard: React.FC = () => {
   // Check all three games in the new order
   const allGamesCompleted = assessment?.games['unblock-me'] !== null &&
     assessment?.games.minesweeper !== null &&
-    assessment?.games['water-capacity'] !== null;
+    assessment?.games['water-capacity'] !== null &&
+    assessment?.games['question-game'] !== null;
 
   const hasFailedGame = assessment?.games['unblock-me']?.failed ||
     assessment?.games.minesweeper?.failed ||
-    assessment?.games['water-capacity']?.failed;
+    assessment?.games['water-capacity']?.failed ||
+    assessment?.games['question-game']?.failed;
 
   const games = [
     {
@@ -308,6 +318,15 @@ export const AssessmentDashboard: React.FC = () => {
       color: 'from-game-teal-500 to-game-teal-400',
       available: true,
     },
+    {
+      type: 'question-game' as GameType,
+      title: 'Question Game',
+      description: 'Test your knowledge with multiple-choice questions',
+      skill: 'Knowledge & Recall',
+      Icon: FileText,
+      color: 'from-blue-500 to-blue-400',
+      available: true,
+    },
   ];
 
   // Calculate progress
@@ -319,6 +338,7 @@ export const AssessmentDashboard: React.FC = () => {
     if (!isGameCompleted('unblock-me')) return 'unblock-me';
     if (!isGameCompleted('minesweeper')) return 'minesweeper';
     if (!isGameCompleted('water-capacity')) return 'water-capacity';
+    if (!isGameCompleted('question-game')) return 'question-game';
     return null;
   };
 
@@ -741,8 +761,8 @@ export const AssessmentDashboard: React.FC = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
                             className={`p-3 rounded-md border ${score.failed
-                                ? 'bgradient-to-r from-red-50 to-red-100 border-red-300'
-                                : 'bgradient-to-r from-game-purple-500/5 to-game-purple-400/5 border-game-purple-500/20'
+                              ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-300'
+                              : 'bg-gradient-to-r from-game-purple-500/5 to-game-purple-400/5 border-game-purple-500/20'
                               }`}
                           >
                             {score.failed ? (
@@ -796,10 +816,10 @@ export const AssessmentDashboard: React.FC = () => {
                               onClick={() => startGame(game.type, false)}
                               disabled={!unlocked || completed || !game.available}
                               className={`w-full ${completed
-                                  ? 'bgame-purple-500/10 text-game-purple-700 border-game-purple-500/30'
-                                  : !unlocked || !game.available
-                                    ? 'bg-ay-100 text-gray-400 border-gray-300'
-                                    : 'bg-adient-to-r from-game-purple-700 via-game-purple-600 to-game-purple-500 hover:from-game-purple-800 hover:via-game-purple-700 hover:to-game-purple-600 text-white font-bold rounded-xl shadow-lg shadow-game-purple-500/30 hover:shadow-xl hover:shadow-game-purple-500/40'
+                                ? 'bg-game-purple-500/10 text-game-purple-700 border-game-purple-500/30'
+                                : !unlocked || !game.available
+                                  ? 'bg-gray-100 text-gray-400 border-gray-300'
+                                  : 'bg-gradient-to-r from-game-purple-700 via-game-purple-600 to-game-purple-500 hover:from-game-purple-800 hover:via-game-purple-700 hover:to-game-purple-600 text-white font-bold rounded-xl shadow-lg shadow-game-purple-500/30 hover:shadow-xl hover:shadow-game-purple-500/40'
                                 }`}
                             >
                               {!game.available ? (

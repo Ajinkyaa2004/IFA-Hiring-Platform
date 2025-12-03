@@ -29,7 +29,7 @@ export interface ApplicantProfile {
   createdAt: string;
 }
 
-export type GameType = "minesweeper" | "unblock-me" | "water-capacity";
+export type GameType = "minesweeper" | "unblock-me" | "water-capacity" | "question-game";
 
 export interface GameScore {
   gameType: GameType;
@@ -50,6 +50,7 @@ export interface Assessment {
     minesweeper: GameScore | null;
     "unblock-me": GameScore | null;
     "water-capacity": GameScore | null;
+    "question-game": GameScore | null;
   };
   totalScore: number;
   completedAt?: string;
@@ -58,6 +59,7 @@ export interface Assessment {
     minesweeper: boolean;
     "unblock-me": boolean;
     "water-capacity": boolean;
+    "question-game": boolean;
   };
 }
 
@@ -68,11 +70,13 @@ export interface LeaderboardEntry {
   collegeName: string;
   location: string;
   totalScore: number;
+  totalTimeSpent?: number; // Added for tie-breaking display
   completedAt: string;
   gameScores: {
     minesweeper: number;
     unblockMe: number;
     waterCapacity: number;
+    questionGame: number;
   };
 }
 

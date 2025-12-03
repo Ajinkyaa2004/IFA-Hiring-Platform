@@ -7,6 +7,7 @@ import profileRoutes from './server/routes/profiles.js';
 import assessmentRoutes from './server/routes/assessments.js';
 import leaderboardRoutes from './server/routes/leaderboard.js';
 import settingsRoutes from './server/routes/settings.js';
+import questionGameRoutes from './server/routes/questionGame.js';
 import errorHandler from './server/middleware/errorHandler.js';
 
 dotenv.config();
@@ -50,7 +51,9 @@ app.use('/api/profiles', profileRoutes);
 app.use('/api/assessments', assessmentRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/question-game', questionGameRoutes);
 console.log('✅ Settings route registered at /api/settings');
+console.log('✅ Question Game routes registered at /api/question-game');
 
 // Error handler middleware
 app.use(errorHandler);
@@ -67,7 +70,8 @@ app.get('/', (req, res) => {
       profiles: '/api/profiles',
       assessments: '/api/assessments',
       leaderboard: '/api/leaderboard',
-      settings: '/api/settings'
+      settings: '/api/settings',
+      questionGame: '/api/question-game'
     }
   });
 });

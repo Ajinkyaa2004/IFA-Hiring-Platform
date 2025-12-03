@@ -643,7 +643,7 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
     return true;
   };
 
-  const calculateLevelScore = (levelIndex: number, moves: number, timeSpent: number) => {
+  const calculateLevelScore = (levelIndex: number, moves: number, _timeSpent: number) => {
     const level = selectedLevels[levelIndex];
     if (!level) return 0;
 

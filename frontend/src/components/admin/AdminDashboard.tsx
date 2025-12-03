@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { getProfiles, getAssessments, getLeaderboard } from '@/lib/storage';
 import { ApplicantProfile, Assessment, LeaderboardEntry } from '@/types';
-import { Users, Trophy, CheckCircle, Clock, LogOut, Search, Download, Star, Target, TrendingUp, Award, Mail, MessageCircle, X } from 'lucide-react';
+import { Users, Trophy, CheckCircle, Clock, LogOut, Search, Download, Star, Target, TrendingUp, Award, Mail, MessageCircle, X, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StatCards } from './StatCards';
 import { DashboardCharts } from './DashboardCharts';
@@ -22,7 +22,7 @@ export const AdminDashboard: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'candidates' | 'leaderboard' | 'insights' | 'settings'>('overview');
-  const [sortBy, setSortBy] = useState<'total' | 'unblockMe' | 'minesweeper' | 'waterCapacity'>('total');
+  const [sortBy, setSortBy] = useState<'total' | 'unblockMe' | 'minesweeper' | 'waterCapacity' | 'questionGame'>('total');
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [showMessageOptions, setShowMessageOptions] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -89,6 +89,8 @@ export const AdminDashboard: React.FC = () => {
           return b.gameScores.minesweeper - a.gameScores.minesweeper;
         case 'waterCapacity':
           return b.gameScores.waterCapacity - a.gameScores.waterCapacity;
+        case 'questionGame':
+          return b.gameScores.questionGame - a.gameScores.questionGame;
         case 'total':
         default:
           return b.totalScore - a.totalScore;
@@ -279,6 +281,18 @@ export const AdminDashboard: React.FC = () => {
                     <span>Settings</span>
                   </div>
                 </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                <Link to="/admin/uploads">
+                  <Button
+                    className="w-full h-28 text-lg font-bold bg-gradient-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 text-white shadow-lg shadow-blue-500/30"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <FileText className="w-8 h-8" />
+                      <span>Manage Quizzes</span>
+                    </div>
+                  </Button>
+                </Link>
               </motion.div>
             </motion.div>
 
@@ -640,6 +654,18 @@ export const AdminDashboard: React.FC = () => {
                         Water Capacity
                       </Button>
                     </motion.div>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        size="sm"
+                        onClick={() => setSortBy('questionGame')}
+                        className={sortBy === 'questionGame'
+                          ? 'bg-gradient-to-r from-[#8558ed] to-[#b18aff] text-white font-bold'
+                          : 'bg-white border-2 border-[#8558ed]/30 text-[#8558ed] hover:bg-[#8558ed]/10 font-bold'}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Question Game
+                      </Button>
+                    </motion.div>
                   </div>
                 </div>
               </CardHeader>
@@ -679,6 +705,14 @@ export const AdminDashboard: React.FC = () => {
                             {sortBy === 'waterCapacity' && <TrendingUp className="w-4 h-4" />}
                           </div>
                         </th>
+                        <th className={`px-4 py-3 text-left font-bold ${sortBy === 'questionGame' ? 'text-blue-700 bg-blue-100/50' : 'text-blue-700'}`}>
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4" />
+                            Q. Game
+                            {sortBy === 'questionGame' && <TrendingUp className="w-4 h-4" />}
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-left font-bold text-game-teal-700">Time Spent</th>
                         <th className="px-4 py-3 text-left font-bold text-game-teal-700">Completed</th>
                       </tr>
                     </thead>
@@ -692,6 +726,14 @@ export const AdminDashboard: React.FC = () => {
                         };
 
                         const rankBadge = getRankBadge();
+
+                        // Helper to format time
+                        const formatTime = (seconds?: number) => {
+                          if (!seconds) return '0:00';
+                          const mins = Math.floor(seconds / 60);
+                          const secs = seconds % 60;
+                          return `${mins}:${secs.toString().padStart(2, '0')}`;
+                        };
 
                         return (
                           <motion.tr
@@ -728,6 +770,10 @@ export const AdminDashboard: React.FC = () => {
                             <td className="px-4 py-3 font-bold text-purple-600">{entry.gameScores.unblockMe}</td>
                             <td className="px-4 py-3 font-bold text-game-orange-600">{entry.gameScores.minesweeper}</td>
                             <td className="px-4 py-3 font-bold text-game-teal-600">{entry.gameScores.waterCapacity}</td>
+                            <td className="px-4 py-3 font-bold text-blue-600">{entry.gameScores.questionGame}</td>
+                            <td className="px-4 py-3 font-mono text-sm text-gray-600">
+                              {formatTime(entry.totalTimeSpent)}
+                            </td>
                             <td className="px-4 py-3 text-xs text-gray-500 font-medium">
                               {new Date(entry.completedAt).toLocaleDateString()}
                             </td>

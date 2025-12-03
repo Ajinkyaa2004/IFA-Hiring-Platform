@@ -141,7 +141,7 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     setWon(false);
     setLevelStartTime(timeRemaining);
     setLevelErrors(0);
-  }, [gridSize, mineCount, initializeGrid, timeRemaining]);
+  }, [gridSize, mineCount, initializeGrid]);
 
   // Scoring calculation function
   const calculateLevelScore = useCallback((currentLevel: number, timeSpent: number, levelErr: number, currentGridSize: number) => {
@@ -203,11 +203,14 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
       setErrors(prev => prev + 1);
       setLevelErrors(prev => prev + 1);
 
-      // Auto-restart after brief delay
+      // Auto-restart after brief delay - generate new grid
       setTimeout(() => {
         setGameOver(false);
-        setGrid(initializeGrid(gridSize, mineCount));
-      }, 1000);
+        const freshGrid = initializeGrid(gridSize, mineCount);
+        setGrid(freshGrid);
+        setLevelStartTime(timeRemaining);
+        setLevelErrors(0);
+      }, 1500);
       return;
     }
 

@@ -19,19 +19,23 @@ export const Messaging: React.FC = () => {
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      navigate('/');
-      return;
-    }
+    const loadCandidates = async () => {
+      if (!user || user.role !== 'admin') {
+        navigate('/');
+        return;
+      }
 
-    const state = location.state as { selectedCandidates?: string[] };
-    if (state?.selectedCandidates) {
-      const profiles = getProfiles();
-      const selected = profiles.filter((p: ApplicantProfile) => (state.selectedCandidates ?? []).includes(p.candidateId));
-      setCandidates(selected);
-    } else {
-      navigate('/admin/dashboard');
-    }
+      const state = location.state as { selectedCandidates?: string[] };
+      if (state?.selectedCandidates) {
+        const profiles = await getProfiles();
+        const selected = profiles.filter((p: ApplicantProfile) => (state.selectedCandidates ?? []).includes(p.candidateId));
+        setCandidates(selected);
+      } else {
+        navigate('/admin/dashboard');
+      }
+    };
+    
+    loadCandidates();
   }, [user, navigate, location]);
 
   const toggleChannel = (channel: string) => {

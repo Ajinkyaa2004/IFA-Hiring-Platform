@@ -18,6 +18,12 @@ import { ToastDemo } from "@/components/demo/ToastDemo";
 import { Toaster } from "sonner";
 import { UnblockMeDev } from "@/components/dev/UnblockMeDev";
 import { WaterCapacityDev } from "@/components/dev/WaterCapacityDev";
+import { QuestionGameUpload } from "@/components/admin/QuestionGameUpload";
+import { QuestionGamePlayer } from "@/components/games/QuestionGamePlayer";
+import { QuestionEditor } from "@/components/admin/QuestionEditor";
+import { QuestionScores } from "@/components/admin/QuestionScores";
+// import { QuestionGameDev } from "@/components/dev/QuestionGameDev";
+
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{
@@ -49,6 +55,7 @@ function AppRoutes() {
         <Route path="/demo/toast" element={<ToastDemo />} />
         <Route path="/dev/unblock-me" element={<UnblockMeDev />} />
         <Route path="/dev/water-capacity" element={<WaterCapacityDev />} />
+        {/* <Route path="/dev/quiz-player" element={<QuestionGameDev />} /> */}
 
         {/* Applicant Routes */}
         <Route
@@ -76,6 +83,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/applicant/game/:gameType/:quizId"
+          element={
+            <ProtectedRoute allowedRoles={["applicant"]}>
+              <GameWrapper />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/applicant/results"
           element={
             <ProtectedRoute allowedRoles={["applicant"]}>
@@ -91,6 +106,36 @@ function AppRoutes() {
             <ProtectedRoute allowedRoles={["admin"]}>
               <AdminDashboard />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/uploads"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <QuestionGameUpload />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/questions/:uploadId"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <QuestionEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/scores/:uploadId"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <QuestionScores />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/game/quiz/:uploadId"
+          element={
+            <QuestionGamePlayer />
           }
         />
 

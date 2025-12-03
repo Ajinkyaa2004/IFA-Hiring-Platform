@@ -9,6 +9,8 @@ import { formatTime, calculateTotalScore } from '@/lib/utils';
 import { Minesweeper } from '@/components/games/Minesweeper';
 import { UnblockMe } from '@/components/games/UnblockMe';
 import { WaterCapacity } from '@/components/games/WaterCapacity';
+import { QuizSelection } from '@/components/games/QuizSelection';
+import { QuestionGamePlayer } from '@/components/games/QuestionGamePlayer';
 import { AlertTriangle, Maximize, X, Sparkles, Zap, Clock, Target, Shield, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -16,18 +18,18 @@ import { motion } from 'framer-motion';
 const GAME_DURATION = 300; // 5 minutes in seconds
 
 export const GameWrapper: React.FC = () => {
-  const { gameType } = useParams<{ gameType: GameType }>();
+  const { gameType, quizId } = useParams<{ gameType: GameType; quizId: string }>();
   const [searchParams] = useSearchParams();
   const isTrial = searchParams.get('trial') === 'true';
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [timeRemaining, setTimeRemaining] = useState(GAME_DURATION);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [_isFullscreen, setIsFullscreen] = useState(false);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [showWarning, setShowWarning] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
-  const [isDisqualified, setIsDisqualified] = useState(false);
+  const [_isDisqualified, setIsDisqualified] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isGamePaused, setIsGamePaused] = useState(false);
 
@@ -41,10 +43,10 @@ export const GameWrapper: React.FC = () => {
 
       try {
         setIsLoading(true);
-        
+
         // ✅ Fetch assessment from MongoDB (now async)
         const assessment = await getAssessmentByUserId(user.id);
-        
+
         if (!assessment) {
           toast.error('Assessment not found. Please complete your profile first.', {
             duration: 3000,
@@ -120,7 +122,7 @@ export const GameWrapper: React.FC = () => {
     const handleFullscreenChange = () => {
       const inFullscreen = !!document.fullscreenElement;
       setIsFullscreen(inFullscreen);
-      
+
       if (!inFullscreen && gameStarted) {
         setIsGamePaused(true);
         toast.warning('Game paused! Please return to fullscreen to continue.', {
@@ -254,10 +256,11 @@ export const GameWrapper: React.FC = () => {
         assessment.totalScore = calculateTotalScore(
           assessment.games.minesweeper.puzzlesCompleted,
           assessment.games['unblock-me'].puzzlesCompleted,
-          assessment.games['water-capacity'].puzzlesCompleted
+          assessment.games['water-capacity'].puzzlesCompleted,
+          assessment.games['question-game']?.puzzlesCompleted || 0
         );
         assessment.completedAt = new Date().toISOString();
-        
+
         toast.success('🎉 All games completed! View your results now!', {
           duration: 4000,
           icon: '🏆',
@@ -271,10 +274,8 @@ export const GameWrapper: React.FC = () => {
 
       // ✅ Save to MongoDB (now async)
       await saveAssessment(assessment);
-      
-      exitFullscreen();
 
-      // Navigate back to assessment dashboard
+      exitFullscreen();
       navigate('/applicant/assessment');
     } catch (error) {
       console.error('Error saving game completion:', error);
@@ -304,6 +305,7 @@ export const GameWrapper: React.FC = () => {
       case 'minesweeper': return 'Minesweeper';
       case 'unblock-me': return 'Unblock Me';
       case 'water-capacity': return 'Water Capacity';
+      case 'question-game': return 'Question Game';
       default: return 'Game';
     }
   };
@@ -316,6 +318,12 @@ export const GameWrapper: React.FC = () => {
         return <UnblockMe onComplete={handleGameComplete} timeRemaining={timeRemaining} isTrialMode={isTrial} />;
       case 'water-capacity':
         return <WaterCapacity onComplete={handleGameComplete} timeRemaining={timeRemaining} isTrialMode={isTrial} />;
+      case 'question-game':
+        return quizId ? (
+          <QuestionGamePlayer uploadId={quizId} onComplete={(score, maxScore) => handleGameComplete(score, maxScore)} />
+        ) : (
+          <QuizSelection />
+        );
       default:
         return <div>Invalid game type</div>;
     }
@@ -565,7 +573,7 @@ export const GameWrapper: React.FC = () => {
               </span>
             )}
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {!isTrial && (
               <>
