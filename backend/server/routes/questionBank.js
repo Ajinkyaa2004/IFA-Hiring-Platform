@@ -7,16 +7,11 @@ import fs from 'fs';
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Helper function to save uploaded file
+// Helper function to convert uploaded file to base64 data URL
 const saveUploadedFile = (file) => {
-    const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.originalname.replace(/\s+/g, '-')}`;
-    const uploadDir = path.join(process.cwd(), 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    const filepath = path.join(uploadDir, filename);
-    fs.writeFileSync(filepath, file.buffer);
-    return `/uploads/${filename}`;
+    const base64 = file.buffer.toString('base64');
+    const mimeType = file.mimetype || 'image/png';
+    return `data:${mimeType};base64,${base64}`;
 };
 
 // POST /api/question-bank/upload - Upload multiple questions to bank

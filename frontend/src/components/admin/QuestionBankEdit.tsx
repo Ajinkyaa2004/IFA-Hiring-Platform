@@ -251,7 +251,7 @@ export function QuestionBankEdit() {
                                     {(question.questionImagePreview || question.questionImageUrl) && (
                                         <div className="relative">
                                             <img 
-                                                src={question.questionImagePreview || `${BACKEND_URL}${question.questionImageUrl}`} 
+                                                src={question.questionImagePreview || (question.questionImageUrl?.startsWith('data:') ? question.questionImageUrl : `${BACKEND_URL}${question.questionImageUrl}`)} 
                                                 alt="Question" 
                                                 className="h-32 rounded-lg border-2 border-purple-200" 
                                             />
@@ -327,7 +327,7 @@ export function QuestionBankEdit() {
                                             {(option.optionImagePreview || option.optionImageUrl) && (
                                                 <div className="relative">
                                                     <img 
-                                                        src={option.optionImagePreview || `${BACKEND_URL}${option.optionImageUrl}`} 
+                                                        src={option.optionImagePreview || (option.optionImageUrl?.startsWith('data:') ? option.optionImageUrl : `${BACKEND_URL}${option.optionImageUrl}`)} 
                                                         alt={`Option ${optIdx + 1}`} 
                                                         className="h-16 rounded border" 
                                                     />
@@ -389,7 +389,7 @@ export function QuestionBankEdit() {
                                     {(question.solutionImagePreview || question.solutionImageUrl) && (
                                         <div className="relative">
                                             <img 
-                                                src={question.solutionImagePreview || `${BACKEND_URL}${question.solutionImageUrl}`} 
+                                                src={question.solutionImagePreview || (question.solutionImageUrl?.startsWith('data:') ? question.solutionImageUrl : `${BACKEND_URL}${question.solutionImageUrl}`)} 
                                                 alt="Solution" 
                                                 className="h-32 rounded-lg border-2 border-green-200" 
                                             />
