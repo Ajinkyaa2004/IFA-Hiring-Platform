@@ -335,7 +335,10 @@ export function ManualQuizCreator() {
                             {/* Options */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <Label>Answer Options ({question.options.length})</Label>
+                                    <div>
+                                        <Label>Answer Options ({question.options.length})</Label>
+                                        <p className="text-xs text-gray-500 mt-1">✓ Check all correct answers (supports multiple)</p>
+                                    </div>
                                     <Button
                                         type="button"
                                         variant="outline"
@@ -349,17 +352,15 @@ export function ManualQuizCreator() {
                                 {question.options.map((option, optIdx) => (
                                     <div key={optIdx} className="flex items-start gap-3 p-3 border rounded-lg bg-gray-50">
                                         <input
-                                            type="radio"
-                                            name={`correct-${qIdx}`}
+                                            type="checkbox"
                                             checked={option.isCorrect}
                                             onChange={() => {
                                                 const newQuestions = [...questions];
-                                                newQuestions[qIdx].options.forEach((o, i) => {
-                                                    o.isCorrect = i === optIdx;
-                                                });
+                                                newQuestions[qIdx].options[optIdx].isCorrect = !newQuestions[qIdx].options[optIdx].isCorrect;
                                                 setQuestions(newQuestions);
                                             }}
-                                            className="mt-3"
+                                            className="mt-3 w-4 h-4"
+                                            title="Check to mark as correct answer"
                                         />
                                         <div className="flex-1 space-y-2">
                                             <Input
