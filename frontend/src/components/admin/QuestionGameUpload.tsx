@@ -149,6 +149,19 @@ export function QuestionGameUpload() {
 
     return (
         <div className="space-y-6 p-6">
+            {/* Header with Create Button */}
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold">Manage Quizzes</h1>
+                <Button
+                    onClick={() => navigate('/admin/create-quiz')}
+                    size="lg"
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+                >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Create Image-Based Quiz
+                </Button>
+            </div>
+
             {/* Previous Uploads Section */}
             <Card>
                 <CardHeader>

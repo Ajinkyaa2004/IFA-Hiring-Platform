@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAssessmentByUserId, getProfileByUserId } from '@/lib/storage';
 import { Assessment, ApplicantProfile } from '@/types';
-import { Trophy, CheckCircle, Clock, Target, LogOut, Bomb, Droplet, Award, Zap, Sparkles, Star, TrendingUp, AlertCircle, User, Mail, GraduationCap, MapPin, Briefcase, PartyPopper, ArrowLeft, Car } from 'lucide-react';
+import { Trophy, CheckCircle, Clock, Target, LogOut, Bomb, Droplet, Award, Zap, Sparkles, Star, TrendingUp, AlertCircle, User, Mail, GraduationCap, MapPin, Briefcase, PartyPopper, ArrowLeft, Car, FileText } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -34,13 +34,13 @@ export const Results: React.FC = () => {
         // ✅ Fetch assessment from MongoDB (now async)
         const userAssessment = await getAssessmentByUserId(user.id);
 
-        // Check if all three games are completed
-        const allGamesCompleted = userAssessment?.games['unblock-me'] !== null &&
+        // Check if at least the first three games are completed
+        const minimumGamesCompleted = userAssessment?.games['unblock-me'] !== null &&
                                   userAssessment?.games.minesweeper !== null && 
                                   userAssessment?.games['water-capacity'] !== null;
 
-        if (!userProfile || !userAssessment || !allGamesCompleted) {
-          toast.warning('Please complete all three games first. Redirecting to dashboard...', {
+        if (!userProfile || !userAssessment || !minimumGamesCompleted) {
+          toast.warning('Please complete at least the first three games first. Redirecting to dashboard...', {
             duration: 3000,
             icon: '⚠️',
           });
@@ -96,7 +96,7 @@ export const Results: React.FC = () => {
       icon: Car,
       skill: 'Spatial Reasoning & Problem Solving',
       score: assessment.games['unblock-me'],
-      gradient: 'from-[#8558ed] to-[#b18aff]',
+      gradient: 'from-orange-500 to-amber-500',
     },
     {
       type: 'minesweeper',
@@ -104,7 +104,7 @@ export const Results: React.FC = () => {
       icon: Bomb,
       skill: 'Risk Assessment & Deductive Logic',
       score: assessment.games.minesweeper,
-      gradient: 'from-rose-500 to-pink-500',
+      gradient: 'from-purple-600 to-purple-500',
     },
     {
       type: 'water-capacity',
@@ -112,7 +112,15 @@ export const Results: React.FC = () => {
       icon: Droplet,
       skill: 'Logical Sequencing & Optimization',
       score: assessment.games['water-capacity'],
-      gradient: 'from-blue-500 to-cyan-500',
+      gradient: 'from-teal-500 to-cyan-500',
+    },
+    {
+      type: 'question-game',
+      title: 'Question Game',
+      icon: FileText,
+      skill: 'Knowledge & Recall',
+      score: assessment.games['question-game'],
+      gradient: 'from-blue-600 to-indigo-600',
     },
   ];
 
@@ -168,7 +176,7 @@ export const Results: React.FC = () => {
             opacity: [0.3, 0.2, 0.3],
           }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute w-96 h-96 bg-[#8558ed]/20 rounded-full blur-3xl top-10 -left-20"
+          className="absolute w-96 h-96 bg-purple-400/20 rounded-full blur-3xl top-10 -left-20"
         />
         <motion.div
           animate={{
@@ -176,7 +184,7 @@ export const Results: React.FC = () => {
             opacity: [0.2, 0.3, 0.2],
           }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute w-80 h-80 bg-[#b18aff]/20 rounded-full blur-3xl bottom-10 -right-20"
+          className="absolute w-80 h-80 bg-blue-400/20 rounded-full blur-3xl bottom-10 -right-20"
         />
         <motion.div
           animate={{
@@ -184,7 +192,7 @@ export const Results: React.FC = () => {
             opacity: [0.15, 0.25, 0.15],
           }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute w-72 h-72 bg-[#8558ed]/15 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          className="absolute w-72 h-72 bg-cyan-400/15 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
         />
       </div>
 
@@ -197,7 +205,7 @@ export const Results: React.FC = () => {
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         className="absolute top-20 left-10 pointer-events-none"
       >
-        <Sparkles className="w-8 h-8 text-[#8558ed]/30" />
+        <Sparkles className="w-8 h-8 text-purple-400/30" />
       </motion.div>
       <motion.div
         animate={{
@@ -207,7 +215,7 @@ export const Results: React.FC = () => {
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         className="absolute top-32 right-16 pointer-events-none"
       >
-        <Zap className="w-10 h-10 text-[#b18aff]/30" />
+        <Zap className="w-10 h-10 text-blue-400/30" />
       </motion.div>
       <motion.div
         animate={{
@@ -217,7 +225,7 @@ export const Results: React.FC = () => {
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         className="absolute bottom-24 left-20 pointer-events-none"
       >
-        <Star className="w-7 h-7 text-[#8558ed]/30" />
+        <Star className="w-7 h-7 text-cyan-400/30" />
       </motion.div>
       <motion.div
         animate={{
@@ -230,20 +238,20 @@ export const Results: React.FC = () => {
         <Target className="w-9 h-9 text-[#b18aff]/30" />
       </motion.div>
 
-      <div className="max-w-7xl mx-auto p-6 py-10 relative z-10">
+      <div className="max-w-6xl mx-auto p-4 py-6 relative z-10">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="flex justify-between items-center mb-8"
+          className="flex justify-between items-center mb-6"
         >
           <div>
-            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#8558ed] via-[#b18aff] to-[#8558ed] mb-2 flex items-center gap-3">
-              <Trophy className="w-10 h-10 text-[#8558ed]" />
+            <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 mb-2 flex items-center gap-2">
+              <Trophy className="w-8 h-8 text-purple-600" />
               Assessment Results
             </h1>
-            <p className="text-lg text-[#8558ed]/70 font-medium flex items-center gap-2">
-              <Target className="w-5 h-5" />
+            <p className="text-base text-gray-600 font-medium flex items-center gap-2">
+              <Target className="w-4 h-4" />
               Candidate ID: <span className="font-mono font-semibold text-[#8558ed]">{profile.candidateId}</span>
             </p>
           </div>
@@ -251,7 +259,7 @@ export const Results: React.FC = () => {
             <Button 
               variant="outline" 
               onClick={logout}
-              className="border-2 border-[#8558ed]/30 hover:bg-[#8558ed]/10 text-[#8558ed] font-semibold"
+              className="border-2 border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Logout
@@ -265,40 +273,40 @@ export const Results: React.FC = () => {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <Card className="mb-8 bg-white/80 backdrop-blur-xl border-2 border-[#8558ed]/30 shadow-2xl shadow-[#8558ed]/20 overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#8558ed]/5 to-[#b18aff]/5 pointer-events-none" />
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#8558ed] via-[#b18aff] to-[#8558ed] flex items-center gap-3">
+          <Card className="mb-6 bg-white/90 backdrop-blur-xl border-2 border-gray-200 shadow-lg overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 pointer-events-none" />
+            <CardHeader className="relative z-10 pb-4">
+              <CardTitle className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 flex items-center gap-2">
                 <motion.div
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="bg-gradient-to-tr from-[#8558ed] to-[#b18aff] w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+                  className="bg-gradient-to-tr from-purple-600 to-blue-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
                 >
-                  <Trophy className="w-8 h-8 text-white" />
+                  <Trophy className="w-6 h-6 text-white" />
                 </motion.div>
                 Total Assessment Score
               </CardTitle>
-              <CardDescription className="text-[#8558ed]/70 text-lg font-medium flex items-center gap-2 mt-2">
+              <CardDescription className="text-gray-600 text-sm font-medium flex items-center gap-2 mt-1">
                 <Clock className="w-5 h-5" />
                 {assessment.completedAt ? `Completed on ${formatDate(assessment.completedAt)}` : 'Assessment in progress'}
               </CardDescription>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-baseline gap-2">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.4, type: "spring" }}
-                  className="text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#8558ed] to-[#b18aff]"
+                  className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600"
                 >
                   {assessment.totalScore}
                 </motion.div>
-                <div className="text-2xl font-semibold text-[#8558ed]/70">/ 100 points</div>
+                <div className="text-xl font-semibold text-gray-600">/ 100 points</div>
               </div>
-              <div className="mt-4 flex items-center gap-2">
-                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#8558ed]/10 to-[#b18aff]/10 rounded-full border-2 border-[#8558ed]/30">
-                  <performanceStatus.icon className="w-5 h-5 text-[#8558ed]" />
-                  <span className="font-bold text-[#8558ed]">{performanceStatus.label}</span>
+              <div className="mt-3 flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-full border border-purple-200">
+                  <performanceStatus.icon className="w-4 h-4 text-purple-600" />
+                  <span className="font-bold text-purple-600 text-sm">{performanceStatus.label}</span>
                 </div>
               </div>
             </CardContent>
@@ -306,7 +314,7 @@ export const Results: React.FC = () => {
         </motion.div>
 
         {/* Individual Game Scores */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {games.map((game, idx) => {
             const GameIcon = game.icon;
             const badge = game.score ? getScoreBadge(game.score.puzzlesCompleted) : null;
@@ -320,70 +328,74 @@ export const Results: React.FC = () => {
                 transition={{ duration: 0.5, delay: 0.3 + idx * 0.1 }}
                 whileHover={{ y: -8, transition: { duration: 0.2 } }}
               >
-                <Card className="bg-white/80 backdrop-blur-xl border-2 border-[#8558ed]/30 shadow-xl shadow-[#8558ed]/10 hover:shadow-2xl hover:shadow-[#8558ed]/20 transition-all duration-300 h-full group">
-                  <CardHeader>
-                    <div className="flex items-center gap-4">
+                <Card className="bg-white/90 backdrop-blur-xl border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300 h-full group">
+                  <CardHeader className="pb-3">
+                    <div className="flex flex-col items-center text-center gap-2">
                       <motion.div 
                         whileHover={{ scale: 1.1, rotate: 5 }}
-                        className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${game.gradient} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300`}
+                        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${game.gradient} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300`}
                       >
-                        <GameIcon className="w-8 h-8 text-white" />
+                        <GameIcon className="w-6 h-6 text-white" />
                       </motion.div>
                       <div>
-                        <CardTitle className="text-2xl font-bold text-[#030303]">{game.title}</CardTitle>
-                        <CardDescription className="text-[#8558ed]/70 font-medium mt-1">{game.skill}</CardDescription>
+                        <CardTitle className="text-lg font-bold text-gray-800">{game.title}</CardTitle>
+                        <CardDescription className="text-gray-600 text-xs font-medium mt-0.5">{game.skill}</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-2 pt-3">
                     {game.score && (
                       <>
-                        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-[#8558ed]/5 to-[#b18aff]/5 rounded-xl border border-[#8558ed]/20">
-                          <span className="text-sm font-semibold text-[#8558ed]/80">Puzzles Completed</span>
-                          <span className={`text-3xl font-extrabold ${getScoreColor(game.score.puzzlesCompleted)}`}>
+                        <div className="flex items-center justify-between p-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                          <span className="text-xs font-semibold text-gray-600">Score</span>
+                          <span className={`text-2xl font-extrabold ${getScoreColor(game.score.puzzlesCompleted)}`}>
                             {game.score.puzzlesCompleted}
                           </span>
                         </div>
                         
                         {badge && BadgeIcon && (
-                          <div className={`flex items-center justify-between p-3 ${badge.bg} rounded-xl border-2 ${badge.border}`}>
-                            <span className="text-sm font-semibold text-gray-700">Performance</span>
-                            <div className="flex items-center gap-2">
-                              <BadgeIcon className={`w-5 h-5 ${badge.color}`} />
-                              <span className={`font-bold ${badge.color}`}>
+                          <div className={`flex items-center justify-between p-2 ${badge.bg} rounded-lg border ${badge.border}`}>
+                            <span className="text-xs font-semibold text-gray-700">Performance</span>
+                            <div className="flex items-center gap-1.5">
+                              <BadgeIcon className={`w-4 h-4 ${badge.color}`} />
+                              <span className={`font-bold text-xs ${badge.color}`}>
                                 {getScoreLabel(game.score.puzzlesCompleted)}
                               </span>
                             </div>
                           </div>
                         )}
 
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
-                          <div className="flex items-center gap-2 text-gray-700">
-                            <Clock className="w-4 h-4" />
-                            <span className="text-sm font-medium">Time Spent</span>
+                        <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="flex items-center gap-1.5 text-gray-700">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span className="text-xs font-medium">Time</span>
                           </div>
-                          <span className="font-bold text-[#8558ed]">
+                          <span className="font-bold text-gray-700 text-sm">
                             {Math.floor(game.score.timeSpent / 60)}:{(game.score.timeSpent % 60).toString().padStart(2, '0')}
                           </span>
                         </div>
 
                         {game.score.errorRate !== undefined && (
-                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
-                            <div className="flex items-center gap-2 text-gray-700">
-                              <AlertCircle className="w-4 h-4" />
-                              <span className="text-sm font-medium">Errors</span>
+                          <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-1.5 text-gray-700">
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              <span className="text-xs font-medium">Errors</span>
                             </div>
-                            <span className="font-bold text-gray-700">{game.score.errorRate}</span>
+                            <span className="font-bold text-gray-700 text-sm">
+                              {typeof game.score.errorRate === 'number' 
+                                ? game.score.errorRate.toFixed(2) 
+                                : game.score.errorRate}
+                            </span>
                           </div>
                         )}
 
                         {game.score.minimumMoves !== undefined && (
-                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
-                            <div className="flex items-center gap-2 text-gray-700">
-                              <Target className="w-4 h-4" />
-                              <span className="text-sm font-medium">Total Moves</span>
+                          <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-1.5 text-gray-700">
+                              <Target className="w-3.5 h-3.5" />
+                              <span className="text-xs font-medium">Total Moves</span>
                             </div>
-                            <span className="font-bold text-gray-700">{game.score.minimumMoves}</span>
+                            <span className="font-bold text-gray-700 text-sm">{game.score.minimumMoves}</span>
                           </div>
                         )}
                       </>
@@ -479,58 +491,58 @@ export const Results: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.7 }}
         >
-          <Card className="bg-white/80 backdrop-blur-xl border-2 border-[#8558ed]/20 shadow-xl shadow-[#8558ed]/10">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-[#8558ed] flex items-center gap-2">
-                <User className="w-6 h-6" />
+          <Card className="bg-white/90 backdrop-blur-xl border border-gray-200 shadow-md">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <User className="w-5 h-5" />
                 Your Profile Summary
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-[#8558ed]/5 to-transparent rounded-lg">
-                <User className="w-5 h-5 text-[#8558ed] flex-shrink-0 mt-0.5" />
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex items-start gap-2 p-2 bg-gradient-to-r from-gray-50 to-transparent rounded-lg border border-gray-100">
+                <User className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-semibold text-[#8558ed]/70 uppercase">Name</div>
+                  <div className="text-xs font-semibold text-gray-600 uppercase">Name</div>
                   <div className="font-bold text-gray-800">{profile.name}</div>
                 </div>
               </div>
               
-              <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-[#8558ed]/5 to-transparent rounded-lg">
-                <Mail className="w-5 h-5 text-[#8558ed] flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 p-2 bg-gradient-to-r from-gray-50 to-transparent rounded-lg border border-gray-100">
+                <Mail className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-semibold text-[#8558ed]/70 uppercase">Email</div>
+                  <div className="text-xs font-semibold text-gray-600 uppercase">Email</div>
                   <div className="font-bold text-gray-800">{profile.email}</div>
                 </div>
               </div>
               
-              <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-[#8558ed]/5 to-transparent rounded-lg">
-                <GraduationCap className="w-5 h-5 text-[#8558ed] flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 p-2 bg-gradient-to-r from-gray-50 to-transparent rounded-lg border border-gray-100">
+                <GraduationCap className="w-4 h-4 text-cyan-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-semibold text-[#8558ed]/70 uppercase">College</div>
+                  <div className="text-xs font-semibold text-gray-600 uppercase">College</div>
                   <div className="font-bold text-gray-800">{profile.collegeName}</div>
                 </div>
               </div>
               
-              <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-[#8558ed]/5 to-transparent rounded-lg">
-                <Award className="w-5 h-5 text-[#8558ed] flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 p-2 bg-gradient-to-r from-gray-50 to-transparent rounded-lg border border-gray-100">
+                <Award className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-semibold text-[#8558ed]/70 uppercase">CGPA</div>
+                  <div className="text-xs font-semibold text-gray-600 uppercase">CGPA</div>
                   <div className="font-bold text-gray-800">{profile.cgpa}</div>
                 </div>
               </div>
               
-              <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-[#8558ed]/5 to-transparent rounded-lg">
-                <MapPin className="w-5 h-5 text-[#8558ed] flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 p-2 bg-gradient-to-r from-gray-50 to-transparent rounded-lg border border-gray-100">
+                <MapPin className="w-4 h-4 text-teal-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-semibold text-[#8558ed]/70 uppercase">Location</div>
+                  <div className="text-xs font-semibold text-gray-600 uppercase">Location</div>
                   <div className="font-bold text-gray-800">{profile.location}</div>
                 </div>
               </div>
               
-              <div className="md:col-span-2 flex items-start gap-3 p-3 bg-gradient-to-r from-[#8558ed]/5 to-transparent rounded-lg">
-                <Briefcase className="w-5 h-5 text-[#8558ed] flex-shrink-0 mt-0.5" />
+              <div className="md:col-span-2 flex items-start gap-2 p-2 bg-gradient-to-r from-gray-50 to-transparent rounded-lg border border-gray-100">
+                <Briefcase className="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-semibold text-[#8558ed]/70 uppercase">Interested Roles</div>
+                  <div className="text-xs font-semibold text-gray-600 uppercase">Interested Roles</div>
                   <div className="font-bold text-gray-800">{profile.interestedRoles.join(', ')}</div>
                 </div>
               </div>
@@ -547,7 +559,7 @@ export const Results: React.FC = () => {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button 
               onClick={() => navigate('/applicant/assessment')} 
-              className="bg-gradient-to-r from-[#8558ed] to-[#b18aff] hover:from-[#7347dc] hover:to-[#a078ee] text-white font-bold px-8 py-6 text-lg shadow-xl shadow-[#8558ed]/30"
+              className="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 hover:from-purple-700 hover:via-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 text-base shadow-lg"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
               Back to Dashboard

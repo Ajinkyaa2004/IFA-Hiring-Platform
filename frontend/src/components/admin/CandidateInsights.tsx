@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ApplicantProfile, Assessment } from '@/types';
-import { Clock, Users, Bomb, Droplet, Car, Trophy, ChevronDown, User } from 'lucide-react';
+import { Clock, Users, Bomb, Droplet, Car, Trophy, ChevronDown, User, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CandidateInsightsProps {
@@ -14,9 +14,11 @@ interface GameTimeData {
   unblockMe: number;
   minesweeper: number;
   waterCapacity: number;
+  questionGame: number;
   unblockMeLevels: number;
   minesweeperLevels: number;
   waterCapacityLevels: number;
+  questionGameLevels: number;
   createdAt: string;
   interestedRoles: string[];
   totalScore: number;
@@ -42,9 +44,11 @@ export const CandidateInsights: React.FC<CandidateInsightsProps> = ({ profiles, 
           unblockMe: assessment.games['unblock-me']?.timeSpent || 0,
           minesweeper: assessment.games.minesweeper?.timeSpent || 0,
           waterCapacity: assessment.games['water-capacity']?.timeSpent || 0,
+          questionGame: assessment.games['question-game']?.timeSpent || 0,
           unblockMeLevels: assessment.games['unblock-me']?.puzzlesCompleted || 0,
           minesweeperLevels: assessment.games.minesweeper?.puzzlesCompleted || 0,
           waterCapacityLevels: assessment.games['water-capacity']?.puzzlesCompleted || 0,
+          questionGameLevels: assessment.games['question-game']?.puzzlesCompleted || 0,
           createdAt: profile.createdAt,
           interestedRoles: profile.interestedRoles,
           totalScore: assessment.totalScore || 0,
@@ -80,6 +84,7 @@ export const CandidateInsights: React.FC<CandidateInsightsProps> = ({ profiles, 
     unblockMe: timeData.reduce((sum, item) => sum + item.unblockMe, 0) / timeData.length || 0,
     minesweeper: timeData.reduce((sum, item) => sum + item.minesweeper, 0) / timeData.length || 0,
     waterCapacity: timeData.reduce((sum, item) => sum + item.waterCapacity, 0) / timeData.length || 0,
+    questionGame: timeData.reduce((sum, item) => sum + item.questionGame, 0) / timeData.length || 0,
   };
 
   // Format time in minutes and seconds
@@ -91,7 +96,7 @@ export const CandidateInsights: React.FC<CandidateInsightsProps> = ({ profiles, 
 
   // Get the maximum time for scaling the bars
   const maxTime = Math.max(
-    ...timeData.flatMap(item => [item.unblockMe, item.minesweeper, item.waterCapacity])
+    ...timeData.flatMap(item => [item.unblockMe, item.minesweeper, item.waterCapacity, item.questionGame])
   );
 
   return (
@@ -235,9 +240,10 @@ export const CandidateInsights: React.FC<CandidateInsightsProps> = ({ profiles, 
               const gamesPlayed = [
                 candidate.unblockMeLevels > 0,
                 candidate.minesweeperLevels > 0,
-                candidate.waterCapacityLevels > 0
+                candidate.waterCapacityLevels > 0,
+                candidate.questionGameLevels > 0
               ].filter(Boolean).length;
-              const totalLevels = candidate.unblockMeLevels + candidate.minesweeperLevels + candidate.waterCapacityLevels;
+              const totalLevels = candidate.unblockMeLevels + candidate.minesweeperLevels + candidate.waterCapacityLevels + candidate.questionGameLevels;
 
               return (
                 <motion.div
@@ -266,7 +272,7 @@ export const CandidateInsights: React.FC<CandidateInsightsProps> = ({ profiles, 
                                 {candidate.interestedRoles[0]}
                               </span>
                             )}
-                            <p className="text-xs text-gray-500">{gamesPlayed}/3 games</p>
+                            <p className="text-xs text-gray-500">{gamesPlayed}/4 games</p>
                           </div>
                           {candidate.createdAt && (
                             <p className="text-xs text-gray-400 mt-0.5">
@@ -293,7 +299,7 @@ export const CandidateInsights: React.FC<CandidateInsightsProps> = ({ profiles, 
                       <div className="flex items-center gap-1 text-xs text-gray-600 bg-blue-50 px-2 py-1 rounded-full">
                         <Clock className="w-3 h-3 text-blue-600" />
                         <span className="font-semibold">
-                          {formatTime(candidate.unblockMe + candidate.minesweeper + candidate.waterCapacity)}
+                          {formatTime(candidate.unblockMe + candidate.minesweeper + candidate.waterCapacity + candidate.questionGame)}
                         </span>
                       </div>
                     </div>
@@ -389,6 +395,34 @@ export const CandidateInsights: React.FC<CandidateInsightsProps> = ({ profiles, 
                                 <div 
                                   className="bg-gradient-to-r from-game-teal-600 to-game-teal-500 h-1.5 rounded-full"
                                   style={{ width: `${(candidate.waterCapacity / maxTime) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Question Game */}
+                          <div className="bg-white rounded-lg p-3 border border-blue-200">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                  <FileText className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <span className="text-xs font-semibold text-gray-700">Question Game</span>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs text-gray-500">Score</span>
+                                <span className="text-xs font-bold text-blue-600">{candidate.questionGameLevels}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs text-gray-500">Time</span>
+                                <span className="text-xs font-bold text-blue-600">{formatTime(candidate.questionGame)}</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                                <div 
+                                  className="bg-gradient-to-r from-blue-600 to-blue-500 h-1.5 rounded-full"
+                                  style={{ width: `${(candidate.questionGame / maxTime) * 100}%` }}
                                 />
                               </div>
                             </div>

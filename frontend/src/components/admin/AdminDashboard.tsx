@@ -294,6 +294,18 @@ export const AdminDashboard: React.FC = () => {
                   </Button>
                 </Link>
               </motion.div>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                <Link to="/admin/question-bank">
+                  <Button
+                    className="w-full h-28 text-lg font-bold bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500 text-white shadow-lg shadow-green-500/30"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <Target className="w-8 h-8" />
+                      <span>Question Bank</span>
+                    </div>
+                  </Button>
+                </Link>
+              </motion.div>
             </motion.div>
 
             {/* Dashboard Charts */}

@@ -19,9 +19,14 @@ import { Toaster } from "sonner";
 import { UnblockMeDev } from "@/components/dev/UnblockMeDev";
 import { WaterCapacityDev } from "@/components/dev/WaterCapacityDev";
 import { QuestionGameUpload } from "@/components/admin/QuestionGameUpload";
+import { ManualQuizCreator } from "@/components/admin/ManualQuizCreator";
+import { ImageQuizPlayer } from "@/components/games/ImageQuizPlayer";
 import { QuestionGamePlayer } from "@/components/games/QuestionGamePlayer";
 import { QuestionEditor } from "@/components/admin/QuestionEditor";
 import { QuestionScores } from "@/components/admin/QuestionScores";
+import { QuestionBankUpload } from "@/components/admin/QuestionBankUpload";
+import { QuestionBankManager } from "@/components/admin/QuestionBankManager";
+import { QuestionBankEdit } from "@/components/admin/QuestionBankEdit";
 // import { QuestionGameDev } from "@/components/dev/QuestionGameDev";
 
 
@@ -117,6 +122,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/admin/create-quiz"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <ManualQuizCreator />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/questions/:uploadId"
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
@@ -129,6 +142,30 @@ function AppRoutes() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <QuestionScores />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/question-bank"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <QuestionBankManager />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/question-bank/upload"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <QuestionBankUpload />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/question-bank/edit/:questionId"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <QuestionBankEdit />
             </ProtectedRoute>
           }
         />

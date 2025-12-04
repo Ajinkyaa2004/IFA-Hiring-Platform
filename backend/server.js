@@ -8,14 +8,17 @@ import assessmentRoutes from './server/routes/assessments.js';
 import leaderboardRoutes from './server/routes/leaderboard.js';
 import settingsRoutes from './server/routes/settings.js';
 import questionGameRoutes from './server/routes/questionGame.js';
+import questionBankRoutes from './server/routes/questionBank.js';
 import errorHandler from './server/middleware/errorHandler.js';
 
 dotenv.config();
 
 const app = express();
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB (non-blocking for serverless)
+connectDB().catch(err => {
+  console.error('Failed to connect to MongoDB:', err);
+});
 
 // Middleware - CORS
 const allowedOrigins = [
@@ -55,8 +58,10 @@ app.use('/api/assessments', assessmentRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/question-game', questionGameRoutes);
+app.use('/api/question-bank', questionBankRoutes);
 console.log('✅ Settings route registered at /api/settings');
 console.log('✅ Question Game routes registered at /api/question-game');
+console.log('✅ Question Bank routes registered at /api/question-bank');
 
 // Error handler middleware
 app.use(errorHandler);

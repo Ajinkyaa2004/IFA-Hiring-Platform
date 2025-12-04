@@ -36,6 +36,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
     waterCapacity: completedGames.length > 0 
       ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['water-capacity']?.puzzlesCompleted || 0), 0) / completedGames.length)
       : 0,
+    questionGame: completedGames.length > 0 
+      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['question-game']?.puzzlesCompleted || 0), 0) / completedGames.length)
+      : 0,
   };
 
   // Mock daily engagement data (in a real app, this would come from your analytics)
@@ -86,6 +89,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
           minesweeper={averageScores.minesweeper}
           unblockMe={averageScores.unblockMe}
           waterCapacity={averageScores.waterCapacity}
+          questionGame={averageScores.questionGame}
         />
       </motion.div>
 

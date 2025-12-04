@@ -240,7 +240,10 @@ export const AssessmentDashboard: React.FC = () => {
       return assessment.games.minesweeper !== null;
     }
     if (gameType === 'question-game') {
-      return assessment.games['water-capacity'] !== null;
+      // Question Game unlocks only after all three games are completed
+      return assessment.games['unblock-me'] !== null && 
+             assessment.games.minesweeper !== null && 
+             assessment.games['water-capacity'] !== null;
     }
     return false;
   };
@@ -256,13 +259,20 @@ export const AssessmentDashboard: React.FC = () => {
       return assessment.games.minesweeper !== null;
     }
     if (gameType === 'question-game') {
-      return assessment.games['water-capacity'] !== null;
+      // Question Game trial unlocks only after all three games are completed
+      return assessment.games['unblock-me'] !== null && 
+             assessment.games.minesweeper !== null && 
+             assessment.games['water-capacity'] !== null;
     }
     return false;
   };
 
   const isGameCompleted = (gameType: GameType): boolean => {
-    return assessment?.games[gameType] !== null;
+    const game = assessment?.games[gameType];
+    // Game is only completed if it exists AND has been played (has actual timeSpent data)
+    // A game with null or undefined, or with no timeSpent is not completed
+    if (!game) return false;
+    return game.timeSpent !== undefined && game.timeSpent !== null;
   };
 
   const startGame = (gameType: GameType, isTrial: boolean = false) => {
@@ -595,7 +605,7 @@ export const AssessmentDashboard: React.FC = () => {
           )}
         </AnimatePresence>
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           initial="hidden"
           animate="visible"
           variants={{
@@ -625,11 +635,11 @@ export const AssessmentDashboard: React.FC = () => {
                 transition={{ duration: 0.5, ease: "easeOut" }}
               >
                 <SubtleHoverCard disabled={!unlocked || !game.available}>
-                  <Card className={`${!unlocked || !game.available ? 'opacity-60' : ''} border-2 border-game-purple-500/20 hover:shadow-lg hover:shadow-game-purple-500/10 transition-all duration-300 bg-white/90 backdrop-blur-xl relative overflow-hidden group ${game.type === nextGame && !completed ? 'ring-2 ring-game-purple-500 ring-offset-2' : ''
+                  <Card className={`${!unlocked || !game.available ? 'opacity-60' : ''} border-2 border-game-purple-500/20 hover:shadow-lg hover:shadow-game-purple-500/10 transition-all duration-300 bg-white/90 backdrop-blur-xl relative overflow-hidden group ${game.type === nextGame && !completed && unlocked ? 'ring-2 ring-game-purple-500 ring-offset-2' : ''
                     }`}>
 
                     {/* Next Up Badge */}
-                    {game.type === nextGame && !completed && game.available && (
+                    {game.type === nextGame && !completed && unlocked && game.available && (
                       <motion.div
                         initial={{ scale: 0, rotate: -180 }}
                         animate={{ scale: 1, rotate: 0 }}
@@ -657,7 +667,7 @@ export const AssessmentDashboard: React.FC = () => {
                     <div className="absolute -inset-0.5 bg-gradient-to-br from-game-purple-700 to-game-purple-400 rounded-2xl opacity-0 group-hover:opacity-75 blur transition-all duration-700 ease-out" />
 
                     {/* Pulse effect for next game */}
-                    {game.type === nextGame && !completed && (
+                    {game.type === nextGame && !completed && unlocked && (
                       <motion.div
                         animate={{
                           scale: [1, 1.05, 1],
@@ -701,7 +711,7 @@ export const AssessmentDashboard: React.FC = () => {
                               <XCircle className="w-6 h-6 text-red-600" />
                             </motion.div>
                           )}
-                          {completed && !score?.failed && (
+                          {completed && !score?.failed && unlocked && (
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
@@ -742,6 +752,14 @@ export const AssessmentDashboard: React.FC = () => {
                                   <li>Slide blocks to create a path for the red block</li>
                                   <li>Only horizontal/vertical moves allowed</li>
                                   <li>Clear the path to exit in fewest moves</li>
+                                </>
+                              )}
+                              {game.type === 'question-game' && (
+                                <>
+                                  <li>Answer multiple-choice questions within time limit</li>
+                                  <li>Select the correct answer by clicking on options</li>
+                                  <li>Questions may have images to help you</li>
+                                  <li>Score is based on answers</li>
                                 </>
                               )}
                             </ul>

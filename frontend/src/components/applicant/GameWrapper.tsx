@@ -56,7 +56,7 @@ export const GameWrapper: React.FC = () => {
           return;
         }
 
-        // Check if game is unlocked (new order: Unblock Me -> Minesweeper -> Water Capacity)
+        // Check if game is unlocked (new order: Unblock Me -> Minesweeper -> Water Capacity -> Question Game)
         if (gameType === 'minesweeper' && !assessment.games['unblock-me']) {
           toast.warning('Please complete Unblock Me first to unlock this game.', {
             duration: 3000,
@@ -73,9 +73,22 @@ export const GameWrapper: React.FC = () => {
           navigate('/applicant/assessment');
           return;
         }
+        if (gameType === 'question-game' && 
+            (!assessment.games['unblock-me'] || !assessment.games.minesweeper || !assessment.games['water-capacity'])) {
+          toast.warning('Please complete Unblock Me, Minesweeper, and Water Capacity first to unlock Question Game.', {
+            duration: 4000,
+            icon: '🔒',
+          });
+          navigate('/applicant/assessment');
+          return;
+        }
 
         // Check if already completed (for scored mode)
-        if (!isTrial && assessment.games[gameType]) {
+        // Game is only completed if it has actual timeSpent data (was actually played)
+        const gameData = assessment.games[gameType];
+        const isActuallyCompleted = gameData && gameData.timeSpent !== undefined && gameData.timeSpent !== null;
+        
+        if (!isTrial && isActuallyCompleted) {
           toast.info('You have already completed this game.', {
             duration: 3000,
             icon: 'ℹ️',
@@ -356,11 +369,11 @@ export const GameWrapper: React.FC = () => {
         <div className="absolute -z-10 top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <motion.div
             animate={{
-              scale: [1, 1.2, 1],
+              scale: [1.2, 1, 1.2],
               opacity: [0.3, 0.2, 0.3],
             }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute w-96 h-96 bg-[#8558ed]/20 rounded-full blur-3xl top-10 -left-20"
+            className="absolute w-96 h-96 bg-purple-400/20 rounded-full blur-3xl top-10 -left-20"
           />
           <motion.div
             animate={{
@@ -368,7 +381,7 @@ export const GameWrapper: React.FC = () => {
               opacity: [0.2, 0.3, 0.2],
             }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="absolute w-80 h-80 bg-[#b18aff]/20 rounded-full blur-3xl bottom-10 -right-20"
+            className="absolute w-80 h-80 bg-blue-400/20 rounded-full blur-3xl bottom-10 -right-20"
           />
         </div>
 
@@ -381,7 +394,7 @@ export const GameWrapper: React.FC = () => {
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-20 left-10 pointer-events-none"
         >
-          <Sparkles className="w-8 h-8 text-[#8558ed]/30" />
+          <Sparkles className="w-8 h-8 text-purple-400/30" />
         </motion.div>
         <motion.div
           animate={{
@@ -391,7 +404,7 @@ export const GameWrapper: React.FC = () => {
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           className="absolute top-32 right-16 pointer-events-none"
         >
-          <Zap className="w-10 h-10 text-[#b18aff]/30" />
+          <Zap className="w-10 h-10 text-blue-400/30" />
         </motion.div>
         <motion.div
           animate={{
@@ -401,7 +414,7 @@ export const GameWrapper: React.FC = () => {
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           className="absolute bottom-24 left-20 pointer-events-none"
         >
-          <Target className="w-7 h-7 text-[#8558ed]/30" />
+          <Target className="w-7 h-7 text-cyan-400/30" />
         </motion.div>
 
         <motion.div
@@ -410,24 +423,24 @@ export const GameWrapper: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="w-full max-w-3xl"
         >
-          <Card className="bg-white/80 backdrop-blur-xl border-2 border-[#8558ed]/30 shadow-2xl shadow-[#8558ed]/20">
-            <CardHeader className="text-center pb-4">
+          <Card className="bg-white/95 backdrop-blur-xl border-2 border-gray-200/50 shadow-2xl">
+            <CardHeader className="text-center pb-4 bg-gradient-to-r from-purple-50 via-blue-50 to-purple-50">
               <motion.div
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                <CardTitle className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#8558ed] via-[#b18aff] to-[#8558ed] mb-2 flex items-center justify-center gap-3">
-                  <Sparkles className="w-10 h-10 text-[#8558ed]" />
+                <CardTitle className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 mb-2 flex items-center justify-center gap-3">
+                  <Sparkles className="w-10 h-10 text-purple-600" />
                   Ready to Start
                 </CardTitle>
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="text-2xl font-bold text-[#8558ed] flex items-center justify-center gap-2"
+                  className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent flex items-center justify-center gap-2"
                 >
-                  <Rocket className="w-6 h-6" />
+                  <Rocket className="w-6 h-6 text-blue-600" />
                   {getGameTitle()}
                 </motion.p>
               </motion.div>
@@ -438,68 +451,201 @@ export const GameWrapper: React.FC = () => {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="p-6 bg-gradient-to-br from-[#8558ed]/10 to-[#b18aff]/10 border-2 border-[#8558ed]/30 rounded-2xl"
+                className="p-6 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 border-2 border-purple-200/50 rounded-2xl"
               >
                 <div className="flex items-start space-x-3">
                   <motion.div
                     animate={{ rotate: [0, 10, -10, 0] }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className="bg-gradient-to-tr from-[#8558ed] to-[#b18aff] w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                    className="bg-gradient-to-tr from-purple-600 to-blue-600 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg"
                   >
                     <Shield className="w-5 h-5 text-white" />
                   </motion.div>
                   <div className="flex-1">
-                    <p className="font-bold text-lg text-[#8558ed] mb-3">📋 Important Assessment Rules:</p>
+                    <p className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-3">📋 Important Assessment Rules:</p>
                     <ul className="space-y-3">
                       <motion.li
                         initial={{ x: -20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="flex items-start gap-3 text-[#030303]/80"
+                        className="flex items-start gap-3 text-gray-700"
                       >
-                        <Clock className="w-5 h-5 text-[#8558ed] mt-0.5 flex-shrink-0" />
-                        <span>This game will run for exactly <strong className="text-[#8558ed]">5 minutes</strong></span>
+                        <Clock className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <span>This game will run for exactly <strong className="text-blue-600">5 minutes</strong></span>
                       </motion.li>
                       <motion.li
                         initial={{ x: -20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.5 }}
-                        className="flex items-start gap-3 text-[#030303]/80"
+                        className="flex items-start gap-3 text-gray-700"
                       >
-                        <Maximize className="w-5 h-5 text-[#8558ed] mt-0.5 flex-shrink-0" />
-                        <span>You must play in <strong className="text-[#8558ed]">fullscreen mode</strong></span>
+                        <Maximize className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                        <span>You must play in <strong className="text-purple-600">fullscreen mode</strong></span>
                       </motion.li>
                       <motion.li
                         initial={{ x: -20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.6 }}
-                        className="flex items-start gap-3 text-[#030303]/80"
+                        className="flex items-start gap-3 text-gray-700"
                       >
-                        <AlertTriangle className="w-5 h-5 text-[#8558ed] mt-0.5 flex-shrink-0" />
-                        <span>Tab switching is monitored and limited to <strong className="text-[#8558ed]">2 warnings</strong></span>
+                        <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                        <span>Tab switching is monitored and limited to <strong className="text-orange-600">2 warnings</strong></span>
                       </motion.li>
                       <motion.li
                         initial={{ x: -20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.7 }}
-                        className="flex items-start gap-3 text-[#030303]/80"
+                        className="flex items-start gap-3 text-gray-700"
                       >
-                        <Target className="w-5 h-5 text-[#8558ed] mt-0.5 flex-shrink-0" />
-                        <span>Your score is based on <strong className="text-[#8558ed]">puzzles/levels completed</strong></span>
+                        <Target className="w-5 h-5 text-cyan-600 mt-0.5 flex-shrink-0" />
+                        <span>Your score is based on <strong className="text-cyan-600">puzzles/levels completed</strong></span>
                       </motion.li>
                       <motion.li
                         initial={{ x: -20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.8 }}
-                        className="flex items-start gap-3 text-[#030303]/80"
+                        className="flex items-start gap-3 text-gray-700"
                       >
-                        <Zap className="w-5 h-5 text-[#8558ed] mt-0.5 flex-shrink-0" />
-                        <span>The timer <strong className="text-[#8558ed]">cannot be paused</strong> once started</span>
+                        <Zap className="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+                        <span>The timer <strong className="text-indigo-600">cannot be paused</strong> once started</span>
                       </motion.li>
                     </ul>
                   </div>
                 </div>
               </motion.div>
+
+              {/* Game-Specific How to Play Instructions */}
+              {gameType === 'question-game' && (
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="p-6 bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 border-2 border-cyan-200/50 rounded-2xl"
+                >
+                  <p className="font-bold text-lg bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-3 flex items-center gap-2">
+                    <Target className="w-5 h-5 text-cyan-600" />
+                    📚 How to Play:
+                  </p>
+                  <ul className="space-y-2 text-gray-700 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-cyan-600 font-bold">•</span>
+                      <span>Answer multiple-choice questions within the time limit</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-cyan-600 font-bold">•</span>
+                      <span>Select the correct answer by clicking on the option</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-cyan-600 font-bold">•</span>
+                      <span>Each question may have images to help you understand better</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-cyan-600 font-bold">•</span>
+                      <span>Your score is based on the number of correct answers</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-cyan-600 font-bold">•</span>
+                      <span>Review all questions before submitting your answers</span>
+                    </li>
+                  </ul>
+                </motion.div>
+              )}
+
+              {gameType === 'unblock-me' && (
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="p-6 bg-gradient-to-br from-orange-50 via-yellow-50 to-orange-50 border-2 border-orange-200/50 rounded-2xl"
+                >
+                  <p className="font-bold text-lg bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent mb-3 flex items-center gap-2">
+                    <Target className="w-5 h-5 text-orange-600" />
+                    🚗 How to Play:
+                  </p>
+                  <ul className="space-y-2 text-gray-700 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-orange-600 font-bold">•</span>
+                      <span>Move blocks horizontally or vertically to create a path</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-orange-600 font-bold">•</span>
+                      <span>Click and drag blocks to move them in valid directions</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-orange-600 font-bold">•</span>
+                      <span>Clear the path for the red block to exit through the opening</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-orange-600 font-bold">•</span>
+                      <span>Complete as many levels as possible within 5 minutes</span>
+                    </li>
+                  </ul>
+                </motion.div>
+              )}
+
+              {gameType === 'minesweeper' && (
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 border-2 border-purple-200/50 rounded-2xl"
+                >
+                  <p className="font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3 flex items-center gap-2">
+                    <Target className="w-5 h-5 text-purple-600" />
+                    💣 How to Play:
+                  </p>
+                  <ul className="space-y-2 text-gray-700 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-600 font-bold">•</span>
+                      <span>Left-click to reveal cells, right-click to flag potential mines</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-600 font-bold">•</span>
+                      <span>Numbers show how many mines are in adjacent cells</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-600 font-bold">•</span>
+                      <span>Use logic to deduce where mines are located</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-600 font-bold">•</span>
+                      <span>Complete levels by revealing all safe cells without hitting mines</span>
+                    </li>
+                  </ul>
+                </motion.div>
+              )}
+
+              {gameType === 'water-capacity' && (
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="p-6 bg-gradient-to-br from-teal-50 via-cyan-50 to-teal-50 border-2 border-teal-200/50 rounded-2xl"
+                >
+                  <p className="font-bold text-lg bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent mb-3 flex items-center gap-2">
+                    <Target className="w-5 h-5 text-teal-600" />
+                    💧 How to Play:
+                  </p>
+                  <ul className="space-y-2 text-gray-700 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 font-bold">•</span>
+                      <span>Calculate the total water capacity trapped between blocks</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 font-bold">•</span>
+                      <span>Enter your answer in the input field and click Submit</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 font-bold">•</span>
+                      <span>Water fills up to the lowest surrounding wall height</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 font-bold">•</span>
+                      <span>Solve as many puzzles as possible within 5 minutes</span>
+                    </li>
+                  </ul>
+                </motion.div>
+              )}
 
               {/* Buttons */}
               <motion.div
@@ -515,7 +661,7 @@ export const GameWrapper: React.FC = () => {
                 >
                   <Button
                     onClick={enterFullscreen}
-                    className="w-full h-14 text-lg font-bold bg-gradient-to-r from-[#8558ed] to-[#b18aff] hover:from-[#7347d6] hover:to-[#a179f0] text-white shadow-lg shadow-[#8558ed]/30"
+                    className="w-full h-14 text-lg font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 hover:from-purple-700 hover:via-blue-700 hover:to-cyan-700 text-white shadow-lg"
                   >
                     <Maximize className="w-5 h-5 mr-2" />
                     Enter Fullscreen & Start
@@ -528,7 +674,7 @@ export const GameWrapper: React.FC = () => {
                   <Button
                     onClick={() => navigate('/applicant/assessment')}
                     variant="outline"
-                    className="h-14 px-8 text-lg font-bold border-2 border-[#8558ed]/30 hover:bg-[#8558ed]/10"
+                    className="h-14 px-8 text-lg font-bold border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
                   >
                     <X className="w-5 h-5 mr-2" />
                     Cancel
@@ -546,11 +692,11 @@ export const GameWrapper: React.FC = () => {
                 <motion.p
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="text-lg font-bold text-[#8558ed] flex items-center justify-center gap-2"
+                  className="text-lg font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent flex items-center justify-center gap-2"
                 >
-                  <Sparkles className="w-5 h-5" />
-                  Good Luck! You've got this!
-                  <Rocket className="w-5 h-5" />
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  <span>Good Luck! You've got this!</span>
+                  <Rocket className="w-5 h-5 text-cyan-600" />
                 </motion.p>
               </motion.div>
             </CardContent>

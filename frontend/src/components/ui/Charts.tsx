@@ -364,11 +364,13 @@ export const GamePerformanceChart: React.FC<{
   minesweeper: number;
   unblockMe: number;
   waterCapacity: number;
-}> = ({ minesweeper, unblockMe, waterCapacity }) => {
+  questionGame?: number;
+}> = ({ minesweeper, unblockMe, waterCapacity, questionGame }) => {
   const data = [
     { label: 'Minesweeper', value: minesweeper },
     { label: 'Unblock Me', value: unblockMe },
-    { label: 'Water Capacity', value: waterCapacity }
+    { label: 'Water Capacity', value: waterCapacity },
+    ...(questionGame !== undefined ? [{ label: 'Question Game', value: questionGame }] : [])
   ];
   
   return (
