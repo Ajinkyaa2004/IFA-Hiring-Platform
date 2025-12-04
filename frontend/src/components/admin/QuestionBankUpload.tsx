@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Upload, X, Image as ImageIcon, ArrowLeft, Save, Minus } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 interface QuestionOption {
     optionText: string;
     optionImageFile?: File;
@@ -172,7 +174,7 @@ export function QuestionBankUpload() {
                 });
             });
 
-            const res = await fetch('http://localhost:5000/api/question-bank/upload', {
+            const res = await fetch(`${API_BASE_URL}/question-bank/upload`, {
                 method: 'POST',
                 body: formData
             });

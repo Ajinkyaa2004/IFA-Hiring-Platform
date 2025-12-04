@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { FileText, Play, Clock, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 interface Quiz {
     _id: string;
     filename: string;
@@ -27,7 +29,7 @@ export const QuizSelection: React.FC = () => {
 
     const fetchQuizzes = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/question-game/list');
+            const res = await fetch(`${API_BASE_URL}/question-game/list`);
             if (!res.ok) throw new Error('Failed to fetch quizzes');
             const data = await res.json();
             setQuizzes(data);

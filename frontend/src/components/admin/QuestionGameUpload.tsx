@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, Plus } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 interface Upload {
     _id: string;
     filename: string;
@@ -47,7 +49,7 @@ export function QuestionGameUpload() {
 
     const fetchUploads = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/question-game/uploads');
+            const res = await fetch(`${API_BASE_URL}/question-game/uploads`);
             if (!res.ok) {
                 throw new Error('Failed to fetch uploads');
             }
@@ -117,7 +119,7 @@ export function QuestionGameUpload() {
 
         setIsUploading(true);
         try {
-            const res = await fetch('http://localhost:5000/api/question-game/upload', {
+            const res = await fetch(`${API_BASE_URL}/question-game/upload`, {
                 method: 'POST',
                 body: formData,
             });
@@ -197,7 +199,7 @@ export function QuestionGameUpload() {
                                         onClick={async () => {
                                             if (!confirm('Are you sure you want to delete this quiz?')) return;
                                             try {
-                                                const res = await fetch(`http://localhost:5000/api/question-game/upload/${upload._id}`, {
+                                                const res = await fetch(`${API_BASE_URL}/question-game/upload/${upload._id}`, {
                                                     method: 'DELETE'
                                                 });
                                                 if (res.ok) {
