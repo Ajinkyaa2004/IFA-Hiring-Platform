@@ -20,24 +20,25 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
 }) => {
   // Calculate statistics
   const totalCandidates = profiles.length;
+  const totalAssessments = assessments.length;
   const completedAssessments = assessments.filter(a => a.completedAt).length;
   const inProgressAssessments = assessments.filter(a => !a.completedAt && Object.values(a.games).some(game => game !== null)).length;
-  const notStartedAssessments = totalCandidates - completedAssessments - inProgressAssessments;
+  const notStartedAssessments = Math.max(0, totalAssessments - completedAssessments - inProgressAssessments);
 
   // Calculate average scores for completed assessments
   const completedGames = assessments.filter(a => a.completedAt);
   const averageScores = {
     minesweeper: completedGames.length > 0 
-      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games.minesweeper?.puzzlesCompleted || 0), 0) / completedGames.length)
+      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games.minesweeper?.score || 0), 0) / completedGames.length)
       : 0,
     unblockMe: completedGames.length > 0 
-      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['unblock-me']?.puzzlesCompleted || 0), 0) / completedGames.length)
+      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['unblock-me']?.score || 0), 0) / completedGames.length)
       : 0,
     waterCapacity: completedGames.length > 0 
-      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['water-capacity']?.puzzlesCompleted || 0), 0) / completedGames.length)
+      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['water-capacity']?.score || 0), 0) / completedGames.length)
       : 0,
     questionGame: completedGames.length > 0 
-      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['question-game']?.puzzlesCompleted || 0), 0) / completedGames.length)
+      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['question-game']?.score || 0), 0) / completedGames.length)
       : 0,
   };
 
@@ -59,8 +60,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
     { label: 'Not Started', value: notStartedAssessments }
   ];
 
-  // Calculate completion rate percentage
-  const completionRate = totalCandidates > 0 ? (completedAssessments / totalCandidates) * 100 : 0;
+  // Calculate completion rate percentage (based on assessments, not profiles)
+  const completionRate = totalAssessments > 0 ? (completedAssessments / totalAssessments) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -74,7 +75,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
         {/* Assessment Completion Circular Chart */}
         <AssessmentCompletionChart
           completed={completedAssessments}
-          total={totalCandidates}
+          total={totalAssessments}
         />
 
         {/* Assessment Status Progress Bars */}

@@ -373,12 +373,51 @@ export const GamePerformanceChart: React.FC<{
     ...(questionGame !== undefined ? [{ label: 'Question Game', value: questionGame }] : [])
   ];
   
+  // Find max value for normalization
+  const maxValue = Math.max(...data.map(d => d.value), 1);
+  
+  const colors = ['teal', 'orange', 'purple', 'teal'] as const;
+  
   return (
-    <ProgressBarChart
-      data={data}
-      title="Game Performance"
-      subtitle="Average scores across all games"
-    />
+    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+      <div className="mb-4">
+        <h3 className="text-lg font-bold text-gray-800">Game Performance</h3>
+        <p className="text-sm text-gray-600">Average scores across all games</p>
+      </div>
+      
+      <div className="space-y-4">
+        {data.map((item, index) => {
+          const percentage = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+          const colorScheme = colorMap[colors[index % 4]];
+          
+          return (
+            <div key={item.label} className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-semibold text-gray-700">{item.label}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-gray-800">{item.value}</span>
+                  <span className="text-xs text-gray-500">({percentage.toFixed(1)}%)</span>
+                </div>
+              </div>
+              <div className={`w-full ${colorScheme.secondary} rounded-full h-3`}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${percentage}%` }}
+                  transition={{ duration: 1, delay: index * 0.1, ease: "easeOut" }}
+                  className={`${colorScheme.primary} h-3 rounded-full relative overflow-hidden`}
+                >
+                  <motion.div
+                    animate={{ x: ['0%', '100%', '0%'] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                  />
+                </motion.div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 };
 
