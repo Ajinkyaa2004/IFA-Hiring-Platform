@@ -104,13 +104,11 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Listen only in development mode
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
-    console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
-}
+// Start server (for traditional hosting like Render)
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);
+});
 
-// Export for Vercel serverless
+// Export for Vercel serverless (if needed)
 export default app;
