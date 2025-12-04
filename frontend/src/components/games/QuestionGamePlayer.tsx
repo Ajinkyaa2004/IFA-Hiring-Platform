@@ -202,7 +202,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                 className="w-full h-32 sm:h-48 md:h-56 rounded-xl overflow-hidden shadow-lg"
                             >
                                 <img
-                                    src={`${BACKEND_URL}${coverImage}`}
+                                    src={coverImage?.startsWith('data:') ? coverImage : `${BACKEND_URL}${coverImage}`}
                                     alt="Quiz Cover"
                                     className="w-full h-full object-cover"
                                 />
@@ -302,7 +302,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                     {q.imageUrl && (
                                                         <div className="rounded-lg overflow-hidden bg-gray-50 p-2">
                                                             <img 
-                                                                src={`${BACKEND_URL}${q.imageUrl}`} 
+                                                                src={q.imageUrl?.startsWith('data:') ? q.imageUrl : `${BACKEND_URL}${q.imageUrl}`} 
                                                                 alt="Question" 
                                                                 className="max-h-48 sm:max-h-64 w-full object-contain rounded" 
                                                             />
@@ -349,7 +349,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                                     {opt.imageUrl && (
                                                                         <div className="mt-2 rounded overflow-hidden bg-gray-50 p-1">
                                                                             <img 
-                                                                                src={`${BACKEND_URL}${opt.imageUrl}`} 
+                                                                                src={opt.imageUrl?.startsWith('data:') ? opt.imageUrl : `${BACKEND_URL}${opt.imageUrl}`} 
                                                                                 alt={`Option ${String.fromCharCode(65 + idx)}`} 
                                                                                 className="max-h-24 sm:max-h-32 w-full object-contain rounded"
                                                                             />

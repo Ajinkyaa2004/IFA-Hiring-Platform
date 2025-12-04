@@ -75,7 +75,7 @@ export const QuizSelection: React.FC = () => {
                                 {quiz.coverImage ? (
                                     <div className="h-40 w-full overflow-hidden bg-gray-100">
                                         <img
-                                            src={`${BACKEND_URL}${quiz.coverImage}`}
+                                            src={quiz.coverImage?.startsWith('data:') ? quiz.coverImage : `${BACKEND_URL}${quiz.coverImage}`}
                                             alt={quiz.originalName}
                                             className="w-full h-full object-cover"
                                             onError={(e) => {

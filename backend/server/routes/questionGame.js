@@ -145,23 +145,12 @@ router.post('/manual', upload.single('coverImage'), async (req, res) => {
             return res.status(400).json({ error: 'Invalid data. Title and questions are required.' });
         }
 
+        // Process Cover Image - convert to base64 data URL
         let coverImagePath = null;
         if (req.file) {
-            // Manually save the file since we are using memoryStorage
-            const filename = `${Date.now()}-${req.file.originalname.replace(/\s+/g, '-')}`;
-            // uploads folder is in backend root, which is parent of routes folder? 
-            // No, server.js is in backend root. routes is in backend/server/routes.
-            // So process.cwd() is backend.
-            const uploadDir = path.join(process.cwd(), 'uploads');
-
-            // Ensure directory exists
-            if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
-            }
-
-            const filepath = path.join(uploadDir, filename);
-            fs.writeFileSync(filepath, req.file.buffer);
-            coverImagePath = `/uploads/${filename}`;
+            const base64 = req.file.buffer.toString('base64');
+            const mimeType = req.file.mimetype || 'image/png';
+            coverImagePath = `data:${mimeType};base64,${base64}`;
         }
 
         // 1. Create Upload Record
@@ -222,16 +211,11 @@ router.post('/manual-with-images', upload.any(), async (req, res) => {
             return res.status(400).json({ error: 'Invalid data. Title and questions are required.' });
         }
 
-        // Helper function to save uploaded file
+        // Helper function to convert uploaded file to base64 data URL
         const saveUploadedFile = (file) => {
-            const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.originalname.replace(/\\s+/g, '-')}`;
-            const uploadDir = path.join(process.cwd(), 'uploads');
-            if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
-            }
-            const filepath = path.join(uploadDir, filename);
-            fs.writeFileSync(filepath, file.buffer);
-            return `/uploads/${filename}`;
+            const base64 = file.buffer.toString('base64');
+            const mimeType = file.mimetype || 'image/png';
+            return `data:${mimeType};base64,${base64}`;
         };
 
         // Process uploaded files
