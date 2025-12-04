@@ -16,13 +16,14 @@ const uploadSchema = new mongoose.Schema({
 const questionSchema = new mongoose.Schema({
   uploadId: { type: mongoose.Schema.Types.ObjectId, ref: 'QuizUpload', required: true },
   text: { type: String, required: true },
+  imageUrl: { type: String }, // Optional image URL for the question
   options: [{
     text: { type: String, required: true },
+    imageUrl: { type: String }, // Optional image URL for the option
     isCorrect: { type: Boolean, required: true }
   }],
   points: { type: Number, default: 1 },
-  explanation: { type: String }, // Optional explanation for the answer
-  imageUrl: { type: String } // Optional image URL for the question
+  explanation: { type: String } // Optional explanation for the answer
 });
 
 const scoreSchema = new mongoose.Schema({

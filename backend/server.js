@@ -45,6 +45,9 @@ app.use(cors({
 // Middleware - JSON parsing
 app.use(express.json());
 
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
+
 // API Routes
 app.use('/api/users', userRoutes);
 app.use('/api/profiles', profileRoutes);

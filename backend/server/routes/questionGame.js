@@ -202,7 +202,100 @@ router.post('/manual', upload.single('coverImage'), async (req, res) => {
     }
 });
 
-// ...
+// POST /api/question-game/manual-with-images - Manual Quiz Creation with Question & Option Images
+router.post('/manual-with-images', upload.any(), async (req, res) => {
+    try {
+        console.log("Manual quiz with images creation request received");
+        
+        let { title, questions } = req.body;
+
+        // Parse questions if it's a string
+        if (typeof questions === 'string') {
+            try {
+                questions = JSON.parse(questions);
+            } catch (e) {
+                return res.status(400).json({ error: 'Invalid questions format' });
+            }
+        }
+
+        if (!title || !questions || !Array.isArray(questions) || questions.length === 0) {
+            return res.status(400).json({ error: 'Invalid data. Title and questions are required.' });
+        }
+
+        // Helper function to save uploaded file
+        const saveUploadedFile = (file) => {
+            const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.originalname.replace(/\\s+/g, '-')}`;
+            const uploadDir = path.join(process.cwd(), 'uploads');
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
+            }
+            const filepath = path.join(uploadDir, filename);
+            fs.writeFileSync(filepath, file.buffer);
+            return `/uploads/${filename}`;
+        };
+
+        // Process uploaded files
+        const fileMap = {};
+        if (req.files && Array.isArray(req.files)) {
+            req.files.forEach(file => {
+                fileMap[file.fieldname] = saveUploadedFile(file);
+            });
+        }
+
+        // Extract cover image
+        let coverImagePath = fileMap['coverImage'] || null;
+
+        // Create Upload Record
+        const quizUpload = new QuizUpload({
+            filename: title,
+            originalName: title,
+            coverImage: coverImagePath,
+            status: 'completed',
+            stats: {
+                totalQuestions: questions.length,
+                totalPoints: questions.reduce((sum, q) => sum + (parseInt(q.points) || 1), 0)
+            }
+        });
+        await quizUpload.save();
+
+        // Save Questions with images
+        const savedQuestions = [];
+        for (let i = 0; i < questions.length; i++) {
+            const q = questions[i];
+            
+            // Get question image if exists
+            const questionImageKey = `questionImage_${q.questionImageIndex}`;
+            const questionImageUrl = fileMap[questionImageKey] || undefined;
+
+            const question = new Question({
+                uploadId: quizUpload._id,
+                text: q.text,
+                imageUrl: questionImageUrl,
+                options: q.options.map(opt => {
+                    // Get option image if exists
+                    const optionImageKey = `optionImage_${opt.optionImageIndex}`;
+                    const optionImageUrl = fileMap[optionImageKey] || undefined;
+                    
+                    return {
+                        text: opt.text,
+                        imageUrl: optionImageUrl,
+                        isCorrect: opt.isCorrect
+                    };
+                }),
+                points: parseInt(q.points) || 1,
+                explanation: q.explanation
+            });
+            await question.save();
+            savedQuestions.push(question);
+        }
+
+        res.json({ upload: quizUpload, questions: savedQuestions });
+
+    } catch (error) {
+        console.error("Manual creation with images error:", error);
+        res.status(500).json({ error: 'Failed to create quiz: ' + error.message });
+    }
+});
 
 // GET /api/question-game/quiz/:id - Get questions for a specific quiz
 router.get('/quiz/:id', async (req, res) => {
