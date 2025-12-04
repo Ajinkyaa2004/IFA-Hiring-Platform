@@ -205,6 +205,10 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                     src={coverImage?.startsWith('data:') ? coverImage : `${BACKEND_URL}${coverImage}`}
                                     alt="Quiz Cover"
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        console.error('Failed to load cover image');
+                                        e.currentTarget.parentElement!.style.display = 'none';
+                                    }}
                                 />
                             </motion.div>
                         )}
@@ -305,6 +309,10 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                                 src={q.imageUrl?.startsWith('data:') ? q.imageUrl : `${BACKEND_URL}${q.imageUrl}`} 
                                                                 alt="Question" 
                                                                 className="max-h-48 sm:max-h-64 w-full object-contain rounded" 
+                                                                onError={(e) => {
+                                                                    console.error('Failed to load question image:', q.imageUrl?.substring(0, 50));
+                                                                    e.currentTarget.style.display = 'none';
+                                                                }}
                                                             />
                                                         </div>
                                                     )}
@@ -352,6 +360,10 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                                                 src={opt.imageUrl?.startsWith('data:') ? opt.imageUrl : `${BACKEND_URL}${opt.imageUrl}`} 
                                                                                 alt={`Option ${String.fromCharCode(65 + idx)}`} 
                                                                                 className="max-h-24 sm:max-h-32 w-full object-contain rounded"
+                                                                                onError={(e) => {
+                                                                                    console.error('Failed to load option image:', opt.imageUrl?.substring(0, 50));
+                                                                                    e.currentTarget.style.display = 'none';
+                                                                                }}
                                                                             />
                                                                         </div>
                                                                     )}
