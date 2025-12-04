@@ -6,6 +6,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, XCircle, FileText, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 interface Question {
     _id: string;
     text: string;
@@ -53,7 +55,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
 
     const fetchQuizDetails = async (id: string) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/question-game/upload/${id}`);
+            const res = await fetch(`${API_BASE_URL}/question-game/upload/${id}`);
             if (res.ok) {
                 const data = await res.json();
                 if (data.coverImage) {
@@ -68,8 +70,8 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
     const fetchQuestions = async (id?: string) => {
         try {
             const url = id
-                ? `http://localhost:5000/api/question-game/quiz/${id}`
-                : `http://localhost:5000/api/question-game/quiz/latest`;
+                ? `${API_BASE_URL}/question-game/quiz/${id}`
+                : `${API_BASE_URL}/question-game/quiz/latest`;
 
             const res = await fetch(url);
             if (!res.ok) throw new Error('Failed to fetch quiz');
@@ -112,7 +114,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
 
             const timeSpent = Math.floor((Date.now() - startTime) / 1000);
 
-            const res = await fetch('http://localhost:5000/api/question-game/score', {
+            const res = await fetch(`${API_BASE_URL}/question-game/score`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
