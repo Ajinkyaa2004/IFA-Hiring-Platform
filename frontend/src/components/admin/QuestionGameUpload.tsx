@@ -86,7 +86,7 @@ export function QuestionGameUpload() {
                 formData.append('coverImage', coverImage);
             }
 
-            const res = await fetch('http://localhost:5000/api/question-game/manual', {
+            const res = await fetch(`${API_BASE_URL}/question-game/manual`, {
                 method: 'POST',
                 body: formData // Browser sets Content-Type to multipart/form-data automatically
             });

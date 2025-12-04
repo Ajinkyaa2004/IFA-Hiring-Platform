@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Upload, X, Image as ImageIcon, ArrowLeft, Save, Minus } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 interface QuestionOption {
     text: string;
     imageFile?: File;
@@ -177,7 +179,7 @@ export function ManualQuizCreator() {
                 });
             });
 
-            const res = await fetch('http://localhost:5000/api/question-game/manual-with-images', {
+            const res = await fetch(`${API_BASE_URL}/question-game/manual-with-images`, {
                 method: 'POST',
                 body: formData
             });

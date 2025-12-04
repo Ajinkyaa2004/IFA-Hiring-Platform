@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 interface Score {
     _id: string;
     userId: { name: string; email: string } | string;
@@ -22,7 +24,7 @@ export function QuestionScores() {
 
     const fetchScores = async (id: string) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/question-game/scores/${id}`);
+            const res = await fetch(`${API_BASE_URL}/question-game/scores/${id}`);
             const data = await res.json();
             setScores(data);
         } catch (error) {

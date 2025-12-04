@@ -8,6 +8,9 @@ import { toast } from 'sonner';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Upload, X, Image as ImageIcon, ArrowLeft, Save, Minus, Plus } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BACKEND_URL = API_BASE_URL.replace('/api', '');
+
 interface QuestionOption {
     optionText: string;
     optionImageFile?: File;
@@ -44,7 +47,7 @@ export function QuestionBankEdit() {
 
     const fetchQuestion = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/question-bank/${questionId}`);
+            const res = await fetch(`${API_BASE_URL}/question-bank/${questionId}`);
             if (!res.ok) throw new Error('Failed to fetch question');
             const data = await res.json();
             
@@ -170,7 +173,7 @@ export function QuestionBankEdit() {
                 }
             });
 
-            const res = await fetch(`http://localhost:5000/api/question-bank/${questionId}`, {
+            const res = await fetch(`${API_BASE_URL}/question-bank/${questionId}`, {
                 method: 'PUT',
                 body: formData
             });
@@ -248,7 +251,7 @@ export function QuestionBankEdit() {
                                     {(question.questionImagePreview || question.questionImageUrl) && (
                                         <div className="relative">
                                             <img 
-                                                src={question.questionImagePreview || `http://localhost:5000${question.questionImageUrl}`} 
+                                                src={question.questionImagePreview || `${BACKEND_URL}${question.questionImageUrl}`} 
                                                 alt="Question" 
                                                 className="h-32 rounded-lg border-2 border-purple-200" 
                                             />
@@ -324,7 +327,7 @@ export function QuestionBankEdit() {
                                             {(option.optionImagePreview || option.optionImageUrl) && (
                                                 <div className="relative">
                                                     <img 
-                                                        src={option.optionImagePreview || `http://localhost:5000${option.optionImageUrl}`} 
+                                                        src={option.optionImagePreview || `${BACKEND_URL}${option.optionImageUrl}`} 
                                                         alt={`Option ${optIdx + 1}`} 
                                                         className="h-16 rounded border" 
                                                     />
@@ -386,7 +389,7 @@ export function QuestionBankEdit() {
                                     {(question.solutionImagePreview || question.solutionImageUrl) && (
                                         <div className="relative">
                                             <img 
-                                                src={question.solutionImagePreview || `http://localhost:5000${question.solutionImageUrl}`} 
+                                                src={question.solutionImagePreview || `${BACKEND_URL}${question.solutionImageUrl}`} 
                                                 alt="Solution" 
                                                 className="h-32 rounded-lg border-2 border-green-200" 
                                             />

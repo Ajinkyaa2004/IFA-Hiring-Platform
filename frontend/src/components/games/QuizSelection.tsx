@@ -7,6 +7,7 @@ import { FileText, Play, Clock, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BACKEND_URL = API_BASE_URL.replace('/api', '');
 
 interface Quiz {
     _id: string;
@@ -74,7 +75,7 @@ export const QuizSelection: React.FC = () => {
                                 {quiz.coverImage ? (
                                     <div className="h-40 w-full overflow-hidden bg-gray-100">
                                         <img
-                                            src={`http://localhost:5000${quiz.coverImage}`}
+                                            src={`${BACKEND_URL}${quiz.coverImage}`}
                                             alt={quiz.originalName}
                                             className="w-full h-full object-cover"
                                             onError={(e) => {

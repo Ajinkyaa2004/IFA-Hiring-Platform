@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Trash2, Save, ArrowLeft } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 interface Question {
     _id: string;
     text: string;
@@ -27,7 +29,7 @@ export function QuestionEditor() {
 
     const fetchQuestions = async (id: string) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/question-game/quiz/${id}?admin=true`);
+            const res = await fetch(`${API_BASE_URL}/question-game/quiz/${id}?admin=true`);
             const data = await res.json();
             setQuestions(data);
         } catch (error) {
@@ -39,7 +41,7 @@ export function QuestionEditor() {
 
     const handleUpdate = async (question: Question) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/question-game/question/${question._id}`, {
+            const res = await fetch(`${API_BASE_URL}/question-game/question/${question._id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(question)
@@ -54,7 +56,7 @@ export function QuestionEditor() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure?')) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/question-game/question/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/question-game/question/${id}`, {
                 method: 'DELETE'
             });
             if (!res.ok) throw new Error('Failed to delete');
