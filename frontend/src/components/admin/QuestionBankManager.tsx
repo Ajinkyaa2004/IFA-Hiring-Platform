@@ -10,6 +10,9 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Image as ImageIcon, CheckCircle2, Upload as UploadIcon, Trash2, Pencil } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BACKEND_URL = API_BASE_URL.replace('/api', '');
+
 interface BankQuestion {
     _id: string;
     questionText: string;
@@ -51,7 +54,7 @@ export function QuestionBankManager() {
 
     const fetchQuestions = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/question-bank/list');
+            const res = await fetch(`${API_BASE_URL}/question-bank/list`);
             if (!res.ok) throw new Error('Failed to fetch questions');
             const data = await res.json();
             setQuestions(data.questions);
@@ -132,7 +135,7 @@ export function QuestionBankManager() {
                 label: 'Delete',
                 onClick: async () => {
                     try {
-                        const res = await fetch(`http://localhost:5000/api/question-bank/${questionId}`, {
+                        const res = await fetch(`${API_BASE_URL}/question-bank/${questionId}`, {
                             method: 'DELETE'
                         });
 
@@ -169,7 +172,7 @@ export function QuestionBankManager() {
 
         setIsCreatingQuiz(true);
         try {
-            const res = await fetch('http://localhost:5000/api/question-bank/create-quiz-from-selection', {
+            const res = await fetch(`${API_BASE_URL}/question-bank/create-quiz-from-selection`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -370,7 +373,7 @@ export function QuestionBankManager() {
                             <CardContent className="space-y-3">
                                 {question.questionImageUrl ? (
                                     <img 
-                                        src={`http://localhost:5000${question.questionImageUrl}`} 
+                                        src={`${BACKEND_URL}${question.questionImageUrl}`} 
                                         alt="Question" 
                                         className="w-full h-32 object-contain rounded border"
                                     />
