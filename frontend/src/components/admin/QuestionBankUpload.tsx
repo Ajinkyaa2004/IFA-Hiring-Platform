@@ -197,26 +197,37 @@ export function QuestionBankUpload() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 py-8 px-4">
-            <div className="max-w-4xl mx-auto space-y-6">
+        <div className="min-h-screen bg-gray-50 py-8 px-4">
+            <div className="max-w-3xl mx-auto space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <Button variant="ghost" onClick={() => navigate('/admin/question-bank')}>
+                <div className="space-y-4">
+                    <Button 
+                        variant="ghost" 
+                        onClick={() => navigate('/admin/question-bank')}
+                        className="hover:bg-gray-100 text-gray-700"
+                    >
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Question Bank
                     </Button>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                        Upload Questions to Bank
-                    </h1>
-                    <Button onClick={handleSubmit} disabled={isSubmitting} size="lg">
-                        <Save className="w-4 h-4 mr-2" />
-                        {isSubmitting ? 'Uploading...' : 'Upload Questions'}
-                    </Button>
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-3xl font-bold text-green-600">
+                            Upload Questions to Bank
+                        </h1>
+                        <Button 
+                            onClick={handleSubmit} 
+                            disabled={isSubmitting} 
+                            size="lg"
+                            className="bg-green-500 hover:bg-green-600 text-white"
+                        >
+                            <Save className="w-4 h-4 mr-2" />
+                            {isSubmitting ? 'Uploading...' : 'Upload Questions'}
+                        </Button>
+                    </div>
                 </div>
 
-                <Card className="bg-blue-50 border-blue-200">
+                <Card className="bg-blue-50 border-2 border-blue-200">
                     <CardContent className="pt-6">
                         <p className="text-sm text-gray-700">
-                            💡 <strong>Tip:</strong> Upload 10-20 questions with images and solutions to your question bank. 
+                            💡 <strong className="text-blue-700">Tip:</strong> Upload 10-20 questions with images and solutions to your question bank. 
                             Later, you can select specific questions (e.g., first 10, last 10) to create quizzes.
                         </p>
                     </CardContent>
@@ -224,9 +235,9 @@ export function QuestionBankUpload() {
 
                 {/* Questions */}
                 {questions.map((question, qIdx) => (
-                    <Card key={qIdx} className="border-2 border-purple-100">
-                        <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-purple-50 to-blue-50">
-                            <CardTitle className="text-lg">Question {qIdx + 1}</CardTitle>
+                    <Card key={qIdx} className="border-2 border-gray-200">
+                        <CardHeader className="flex flex-row items-center justify-between bg-game-teal-50">
+                            <CardTitle className="text-lg text-game-teal-700">Question {qIdx + 1}</CardTitle>
                             {questions.length > 1 && (
                                 <Button
                                     variant="destructive"
@@ -240,7 +251,7 @@ export function QuestionBankUpload() {
                         <CardContent className="space-y-6 pt-6">
                             {/* Question Text/Image */}
                             <div className="space-y-3">
-                                <Label>Question Text</Label>
+                                <Label className="text-gray-700 font-medium">Question Text</Label>
                                 <Input
                                     value={question.questionText}
                                     onChange={(e) => {
@@ -252,12 +263,12 @@ export function QuestionBankUpload() {
                                 />
                                 
                                 <div>
-                                    <Label>Question Image (Optional)</Label>
+                                    <Label className="text-gray-700 font-medium">Question Image (Optional)</Label>
                                     <div className="mt-2 flex items-start gap-4">
                                         <label className="cursor-pointer">
-                                            <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 transition-colors">
-                                                <ImageIcon className="w-4 h-4" />
-                                                <span className="text-sm">Upload Image</span>
+                                            <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-game-teal-500 hover:bg-game-teal-50 transition-colors">
+                                                <ImageIcon className="w-4 h-4 text-game-teal-600" />
+                                                <span className="text-sm text-game-teal-700 font-medium">Upload Image</span>
                                             </div>
                                             <input
                                                 type="file"
@@ -268,7 +279,7 @@ export function QuestionBankUpload() {
                                         </label>
                                         {question.questionImagePreview && (
                                             <div className="relative">
-                                                <img src={question.questionImagePreview} alt="Question" className="h-32 rounded-lg border-2 border-purple-200" />
+                                                <img src={question.questionImagePreview} alt="Question" className="h-32 rounded-lg border-2 border-gray-300" />
                                                 <button
                                                     onClick={() => {
                                                         const newQuestions = [...questions];
@@ -290,7 +301,7 @@ export function QuestionBankUpload() {
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <Label>Answer Options ({question.options.length})</Label>
+                                        <Label className="text-gray-700 font-medium">Answer Options ({question.options.length})</Label>
                                         <p className="text-xs text-gray-500 mt-1">✓ Check all correct answers (supports multiple)</p>
                                     </div>
                                     <Button
@@ -298,13 +309,14 @@ export function QuestionBankUpload() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => addOption(qIdx)}
+                                        className="bg-game-purple-500 hover:bg-game-purple-600 text-white border-0"
                                     >
                                         <Plus className="w-3 h-3 mr-1" />
                                         Add Option
                                     </Button>
                                 </div>
                                 {question.options.map((option, optIdx) => (
-                                    <div key={optIdx} className="flex items-start gap-3 p-3 border rounded-lg bg-gray-50">
+                                    <div key={optIdx} className="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg bg-gray-50">
                                         <input
                                             type="checkbox"
                                             checked={option.isCorrect}
@@ -313,7 +325,7 @@ export function QuestionBankUpload() {
                                                 newQuestions[qIdx].options[optIdx].isCorrect = !newQuestions[qIdx].options[optIdx].isCorrect;
                                                 setQuestions(newQuestions);
                                             }}
-                                            className="mt-3 w-4 h-4"
+                                            className="mt-3 w-4 h-4 accent-game-teal-500"
                                             title="Check to mark as correct answer"
                                         />
                                         <div className="flex-1 space-y-2">
@@ -328,9 +340,9 @@ export function QuestionBankUpload() {
                                             />
                                             <div className="flex items-center gap-2">
                                                 <label className="cursor-pointer">
-                                                    <div className="flex items-center gap-1 px-3 py-1 text-xs border border-gray-300 rounded hover:border-purple-500 transition-colors">
-                                                        <ImageIcon className="w-3 h-3" />
-                                                        <span>Image</span>
+                                                    <div className="flex items-center gap-1 px-3 py-1 text-xs border border-gray-300 rounded hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                                                        <ImageIcon className="w-3 h-3 text-blue-600" />
+                                                        <span className="text-blue-700 font-medium">Image</span>
                                                     </div>
                                                     <input
                                                         type="file"
@@ -374,7 +386,7 @@ export function QuestionBankUpload() {
 
                             {/* Solution */}
                             <div className="space-y-3">
-                                <Label>Correct Answer Explanation (Text)</Label>
+                                <Label className="text-gray-700 font-medium">Correct Answer Explanation (Text)</Label>
                                 <Input
                                     value={question.correctAnswer}
                                     onChange={(e) => {
@@ -386,12 +398,12 @@ export function QuestionBankUpload() {
                                 />
                                 
                                 <div>
-                                    <Label>Solution Image (Optional)</Label>
+                                    <Label className="text-gray-700 font-medium">Solution Image (Optional)</Label>
                                     <div className="mt-2 flex items-start gap-4">
                                         <label className="cursor-pointer">
-                                            <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 transition-colors">
-                                                <Upload className="w-4 h-4" />
-                                                <span className="text-sm">Upload Solution</span>
+                                            <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
+                                                <Upload className="w-4 h-4 text-green-600" />
+                                                <span className="text-sm text-green-700 font-medium">Upload Solution</span>
                                             </div>
                                             <input
                                                 type="file"
@@ -402,7 +414,7 @@ export function QuestionBankUpload() {
                                         </label>
                                         {question.solutionImagePreview && (
                                             <div className="relative">
-                                                <img src={question.solutionImagePreview} alt="Solution" className="h-32 rounded-lg border-2 border-green-200" />
+                                                <img src={question.solutionImagePreview} alt="Solution" className="h-32 rounded-lg border-2 border-gray-300" />
                                                 <button
                                                     onClick={() => {
                                                         const newQuestions = [...questions];
@@ -421,9 +433,9 @@ export function QuestionBankUpload() {
                             </div>
 
                             {/* Metadata */}
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t">
                                 <div>
-                                    <Label>Points</Label>
+                                    <Label className="text-game-orange-700 font-medium text-xs">Points</Label>
                                     <Input
                                         type="number"
                                         min="1"
@@ -437,7 +449,7 @@ export function QuestionBankUpload() {
                                     />
                                 </div>
                                 <div>
-                                    <Label>Category</Label>
+                                    <Label className="text-gray-700 font-medium text-xs">Category</Label>
                                     <Select
                                         value={question.category}
                                         onValueChange={(value) => {
@@ -461,7 +473,7 @@ export function QuestionBankUpload() {
                                     </Select>
                                 </div>
                                 <div>
-                                    <Label>Difficulty</Label>
+                                    <Label className="text-gray-700 font-medium text-xs">Difficulty</Label>
                                     <Select
                                         value={question.difficulty}
                                         onValueChange={(value) => {
@@ -486,7 +498,12 @@ export function QuestionBankUpload() {
                 ))}
 
                 {/* Add Question Button */}
-                <Button onClick={addQuestion} variant="outline" className="w-full" size="lg">
+                <Button 
+                    onClick={addQuestion} 
+                    variant="outline" 
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white border-0" 
+                    size="lg"
+                >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Another Question
                 </Button>

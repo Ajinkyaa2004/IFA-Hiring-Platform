@@ -20,7 +20,6 @@ interface Upload {
 }
 
 export function QuestionGameUpload() {
-    const [file, setFile] = useState<File | null>(null);
     const [uploads, setUploads] = useState<Upload[]>([]);
     const [isUploading, setIsUploading] = useState(false);
 
@@ -111,68 +110,31 @@ export function QuestionGameUpload() {
         }
     };
 
-    const handleUpload = async () => {
-        if (!file) return;
-
-        const formData = new FormData();
-        formData.append('pdf', file);
-
-        setIsUploading(true);
-        try {
-            const res = await fetch(`${API_BASE_URL}/question-game/upload`, {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error || 'Upload failed');
-            }
-
-            toast.success('PDF uploaded and processed successfully!');
-            setFile(null);
-            fetchUploads();
-
-            // Redirect to the game
-            if (res.ok) {
-                const data = await res.json();
-                const uploadId = data.upload?._id || data._id;
-                if (uploadId) {
-                    navigate(`/game/quiz/${uploadId}`);
-                }
-            }
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to upload PDF');
-            console.error(error);
-        } finally {
-            setIsUploading(false);
-        }
-    };
-
     return (
-        <div className="space-y-6 p-6">
-            {/* Header with Create Button */}
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold">Manage Quizzes</h1>
-                <Button
-                    onClick={() => navigate('/admin/create-quiz')}
-                    size="lg"
-                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
-                >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Create Image-Based Quiz
-                </Button>
-            </div>
+        <div className="min-h-screen bg-gray-50 p-6">
+            <div className="max-w-7xl mx-auto space-y-6">
+                {/* Header with Create Button */}
+                <div className="flex justify-between items-center">
+                    <h1 className="text-3xl font-bold text-blue-600">Manage Quizzes</h1>
+                    <Button
+                        onClick={() => navigate('/admin/create-quiz')}
+                        size="lg"
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                    >
+                        <Plus className="w-5 h-5 mr-2" />
+                        Create Image-Based Quiz
+                    </Button>
+                </div>
 
             {/* Previous Uploads Section */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Previous Quizzes</CardTitle>
+            <Card className="border-2 border-gray-200">
+                <CardHeader className="bg-game-teal-50">
+                    <CardTitle className="text-game-teal-700">Previous Quizzes</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
                         {uploads.map((upload) => (
-                            <div key={upload._id} className="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div key={upload._id} className="flex justify-between items-center p-4 border-2 border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
                                 <div>
                                     <p className="font-medium">{upload.filename}</p>
                                     <p className="text-sm text-gray-500">
@@ -184,13 +146,25 @@ export function QuestionGameUpload() {
                                     </p>
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button variant="outline" onClick={() => navigate(`/game/quiz/${upload._id}`)}>
+                                    <Button 
+                                        variant="outline" 
+                                        onClick={() => navigate(`/game/quiz/${upload._id}`)}
+                                        className="bg-green-500 hover:bg-green-600 text-white border-0"
+                                    >
                                         Play Quiz
                                     </Button>
-                                    <Button variant="secondary" onClick={() => navigate(`/admin/questions/${upload._id}`)}>
+                                    <Button 
+                                        variant="outline" 
+                                        onClick={() => navigate(`/admin/questions/${upload._id}`)}
+                                        className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                                    >
                                         Manage
                                     </Button>
-                                    <Button variant="ghost" onClick={() => navigate(`/admin/scores/${upload._id}`)}>
+                                    <Button 
+                                        variant="ghost" 
+                                        onClick={() => navigate(`/admin/scores/${upload._id}`)}
+                                        className="hover:bg-gray-200 text-gray-700"
+                                    >
                                         Scores
                                     </Button>
                                     <Button
@@ -219,67 +193,31 @@ export function QuestionGameUpload() {
                                 </div>
                             </div>
                         ))}
-                        {uploads.length === 0 && <p className="text-gray-500 text-center py-4">No quizzes found.</p>}
-                    </div>
-                </CardContent>
-            </Card>
-
-
-            {/* AI Quiz Generation Section */}
-            <Card className="border-2 border-dashed border-blue-200 bg-blue-50/50">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <span className="text-blue-600">✨</span> AI Quiz Generator
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col items-center justify-center space-y-4 py-8">
-                        <div className="text-center space-y-2">
-                            <p className="text-lg font-medium">Upload a Document</p>
-                            <p className="text-sm text-gray-500">
-                                Upload a PDF, DOCX, or TXT file and we'll automatically generate a quiz for you.
-                            </p>
-                        </div>
-
-                        <div className="flex gap-4 items-center w-full max-w-md">
-                            <Input
-                                type="file"
-                                accept=".pdf,.docx,.txt,.md,.xlsx"
-                                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                                className="bg-white"
-                            />
-                            <Button
-                                onClick={handleUpload}
-                                disabled={!file || isUploading}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                            >
-                                {isUploading ? 'Generating...' : 'Generate Quiz'}
-                            </Button>
-                        </div>
-                        <p className="text-xs text-gray-400">
-                            Supported formats: PDF, DOCX, XLSX, TXT, MD (Max 10MB)
-                        </p>
+                        {uploads.length === 0 && <p className="text-gray-500 text-center py-8">No quizzes found.</p>}
                     </div>
                 </CardContent>
             </Card>
 
             {/* Manual Quiz Creation Section */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Create Quiz Manually</CardTitle>
+            <Card className="border-2 border-gray-200">
+                <CardHeader className="bg-game-orange-50">
+                    <CardTitle className="text-game-orange-700">Create Quiz Manually</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {!isCreating ? (
                         <div className="text-center py-8 space-y-4">
-                            <p className="text-gray-500">Create a new quiz from scratch by adding questions manually.</p>
-                            <Button onClick={() => setIsCreating(true)} className="bg-game-purple-600 hover:bg-game-purple-700">
+                            <p className="text-gray-600">Create a new quiz from scratch by adding questions manually.</p>
+                            <Button 
+                                onClick={() => setIsCreating(true)} 
+                                className="bg-game-orange-500 hover:bg-game-orange-600 text-white"
+                            >
                                 <Plus className="w-4 h-4 mr-2" /> Create New Quiz
                             </Button>
                         </div>
                     ) : (
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Quiz Title</label>
+                                <label className="text-sm font-medium text-gray-700">Quiz Title</label>
                                 <Input
                                     placeholder="e.g., General Knowledge Quiz 1"
                                     value={manualTitle}
@@ -288,7 +226,7 @@ export function QuestionGameUpload() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Cover Image (Optional)</label>
+                                <label className="text-sm font-medium text-gray-700">Cover Image (Optional)</label>
                                 <Input
                                     type="file"
                                     accept="image/*"
@@ -299,10 +237,10 @@ export function QuestionGameUpload() {
 
                             <div className="space-y-4">
                                 {manualQuestions.map((q, qIdx) => (
-                                    <Card key={qIdx} className="border border-gray-200">
+                                    <Card key={qIdx} className="border-2 border-gray-200 bg-game-teal-50">
                                         <CardContent className="p-4 space-y-4">
                                             <div className="flex justify-between items-start">
-                                                <h4 className="font-medium">Question {qIdx + 1}</h4>
+                                                <h4 className="font-semibold text-game-teal-700">Question {qIdx + 1}</h4>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
@@ -331,8 +269,8 @@ export function QuestionGameUpload() {
 
                                             <div className="space-y-2">
                                                 <div className="flex justify-between items-center">
-                                                    <label className="text-sm font-medium">Options</label>
-                                                    <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                                                    <label className="text-sm font-medium text-gray-700">Options</label>
+                                                    <span className="text-xs text-blue-700 bg-blue-50 px-2 py-1 rounded-full border border-blue-300">
                                                         Select the radio button to mark the correct answer
                                                     </span>
                                                 </div>
@@ -348,6 +286,7 @@ export function QuestionGameUpload() {
                                                                     newQ[qIdx].options.forEach((o, i) => o.isCorrect = i === oIdx);
                                                                     setManualQuestions(newQ);
                                                                 }}
+                                                                className="accent-game-teal-500"
                                                             />
                                                             <Input
                                                                 placeholder={`Option ${oIdx + 1}`}
@@ -365,7 +304,7 @@ export function QuestionGameUpload() {
 
                                             <div className="flex gap-4">
                                                 <div className="w-24">
-                                                    <label className="text-xs text-gray-500">Points</label>
+                                                    <label className="text-xs font-medium text-game-orange-700">Points</label>
                                                     <Input
                                                         type="number"
                                                         min="1"
@@ -395,14 +334,24 @@ export function QuestionGameUpload() {
                                     ],
                                     points: 1
                                 }])}
-                                className="w-full"
+                                className="w-full bg-green-500 hover:bg-green-600 text-white border-0"
                             >
                                 <Plus className="w-4 h-4 mr-2" /> Add Question
                             </Button>
 
                             <div className="flex justify-end gap-2 pt-4 border-t">
-                                <Button variant="ghost" onClick={() => setIsCreating(false)}>Cancel</Button>
-                                <Button onClick={handleManualSubmit} disabled={isUploading}>
+                                <Button 
+                                    variant="ghost" 
+                                    onClick={() => setIsCreating(false)}
+                                    className="hover:bg-gray-100 text-gray-700"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    onClick={handleManualSubmit} 
+                                    disabled={isUploading}
+                                    className="bg-game-orange-500 hover:bg-game-orange-600 text-white"
+                                >
                                     {isUploading ? 'Saving...' : 'Save & Publish Quiz'}
                                 </Button>
                             </div>
@@ -410,6 +359,7 @@ export function QuestionGameUpload() {
                     )}
                 </CardContent>
             </Card>
+            </div>
         </div>
     );
 }

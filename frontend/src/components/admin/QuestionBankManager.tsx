@@ -200,19 +200,23 @@ export function QuestionBankManager() {
     if (loading) return <div className="flex justify-center items-center h-screen">Loading Question Bank...</div>;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 py-8 px-4">
+        <div className="min-h-screen bg-gray-50 py-8 px-4">
             <div className="max-w-7xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                        <h1 className="text-3xl font-bold text-game-teal-700">
                             Question Bank
                         </h1>
                         <p className="text-gray-600 mt-1">
                             {questions.length} total questions • {selectedQuestions.size} selected
                         </p>
                     </div>
-                    <Button onClick={() => navigate('/admin/question-bank/upload')} size="lg">
+                    <Button 
+                        onClick={() => navigate('/admin/question-bank/upload')} 
+                        size="lg"
+                        className="bg-green-500 hover:bg-green-600 text-white"
+                    >
                         <Plus className="w-4 h-4 mr-2" />
                         Upload Questions
                     </Button>
@@ -220,15 +224,20 @@ export function QuestionBankManager() {
 
                 {/* Selection Actions */}
                 {selectedQuestions.size > 0 && (
-                    <Card className="bg-purple-50 border-purple-200">
+                    <Card className="bg-orange-50 border-2 border-orange-200">
                         <CardContent className="pt-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <CheckCircle2 className="w-5 h-5 text-purple-600" />
-                                    <span className="font-medium text-purple-900">
+                                    <CheckCircle2 className="w-5 h-5 text-game-orange-600" />
+                                    <span className="font-medium text-game-orange-700">
                                         {selectedQuestions.size} question{selectedQuestions.size !== 1 ? 's' : ''} selected
                                     </span>
-                                    <Button variant="outline" size="sm" onClick={clearSelection}>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={clearSelection}
+                                        className="border-gray-300 hover:bg-gray-100"
+                                    >
                                         Clear Selection
                                     </Button>
                                 </div>
@@ -242,7 +251,7 @@ export function QuestionBankManager() {
                                     <Button 
                                         onClick={createQuizFromSelection}
                                         disabled={isCreatingQuiz}
-                                        className="bg-purple-600 hover:bg-purple-700"
+                                        className="bg-game-orange-500 hover:bg-game-orange-600 text-white"
                                     >
                                         <UploadIcon className="w-4 h-4 mr-2" />
                                         {isCreatingQuiz ? 'Creating...' : 'Create Quiz'}
@@ -254,9 +263,9 @@ export function QuestionBankManager() {
                 )}
 
                 {/* Filters & Quick Select */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
+                <Card className="border-2 border-blue-200">
+                    <CardHeader className="bg-blue-50">
+                        <CardTitle className="text-lg flex items-center gap-2 text-blue-700">
                             <Filter className="w-5 h-5" />
                             Filters & Quick Select
                         </CardTitle>
@@ -264,7 +273,7 @@ export function QuestionBankManager() {
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <Label>Search</Label>
+                                <Label className="text-gray-700 font-medium">Search</Label>
                                 <div className="relative mt-1">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <Input
@@ -276,7 +285,7 @@ export function QuestionBankManager() {
                                 </div>
                             </div>
                             <div>
-                                <Label>Category</Label>
+                                <Label className="text-gray-700 font-medium">Category</Label>
                                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                                     <SelectTrigger className="mt-1">
                                         <SelectValue />
@@ -294,7 +303,7 @@ export function QuestionBankManager() {
                                 </Select>
                             </div>
                             <div>
-                                <Label>Difficulty</Label>
+                                <Label className="text-gray-700 font-medium">Difficulty</Label>
                                 <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
                                     <SelectTrigger className="mt-1">
                                         <SelectValue />
@@ -310,12 +319,47 @@ export function QuestionBankManager() {
                         </div>
 
                         <div className="flex flex-wrap gap-2 pt-2">
-                            <span className="text-sm text-gray-600 mr-2">Quick Select:</span>
-                            <Button variant="outline" size="sm" onClick={() => selectRange('first', 5)}>First 5</Button>
-                            <Button variant="outline" size="sm" onClick={() => selectRange('first', 10)}>First 10</Button>
-                            <Button variant="outline" size="sm" onClick={() => selectRange('last', 5)}>Last 5</Button>
-                            <Button variant="outline" size="sm" onClick={() => selectRange('last', 10)}>Last 10</Button>
-                            <Button variant="outline" size="sm" onClick={selectAll}>Select All ({filteredQuestions.length})</Button>
+                            <span className="text-sm font-medium text-gray-700 mr-2">Quick Select:</span>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => selectRange('first', 5)}
+                                className="bg-game-purple-500 hover:bg-game-purple-600 text-white border-0"
+                            >
+                                First 5
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => selectRange('first', 10)}
+                                className="bg-game-purple-500 hover:bg-game-purple-600 text-white border-0"
+                            >
+                                First 10
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => selectRange('last', 5)}
+                                className="bg-game-purple-500 hover:bg-game-purple-600 text-white border-0"
+                            >
+                                Last 5
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => selectRange('last', 10)}
+                                className="bg-game-purple-500 hover:bg-game-purple-600 text-white border-0"
+                            >
+                                Last 10
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={selectAll}
+                                className="bg-game-purple-500 hover:bg-game-purple-600 text-white border-0"
+                            >
+                                Select All ({filteredQuestions.length})
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -325,8 +369,10 @@ export function QuestionBankManager() {
                     {filteredQuestions.map((question, index) => (
                         <Card 
                             key={question._id} 
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                                selectedQuestions.has(question._id) ? 'ring-2 ring-purple-500 bg-purple-50' : ''
+                            className={`cursor-pointer transition-all hover:shadow-lg ${
+                                selectedQuestions.has(question._id) 
+                                    ? 'ring-2 ring-game-teal-500 bg-game-teal-50 border-game-teal-500' 
+                                    : 'border-gray-200 hover:border-game-teal-300'
                             }`}
                             onClick={() => toggleQuestionSelection(question._id)}
                         >
@@ -336,11 +382,17 @@ export function QuestionBankManager() {
                                         <Checkbox 
                                             checked={selectedQuestions.has(question._id)}
                                             onCheckedChange={() => toggleQuestionSelection(question._id)}
+                                            className="border-game-teal-400 data-[state=checked]:bg-game-teal-500"
                                         />
-                                        <span className="text-sm font-medium text-gray-500">Q{index + 1}</span>
+                                        <span className="text-sm font-semibold text-game-teal-700">Q{index + 1}</span>
                                     </div>
                                     <div className="flex gap-1">
-                                        <Badge variant="outline" className="text-xs">{question.category}</Badge>
+                                        <Badge 
+                                            variant="outline" 
+                                            className="text-xs bg-blue-50 text-blue-700 border-blue-300"
+                                        >
+                                            {question.category}
+                                        </Badge>
                                         <Badge 
                                             variant={
                                                 question.difficulty === 'Easy' ? 'default' :
@@ -353,7 +405,7 @@ export function QuestionBankManager() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-6 w-6 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                            className="h-6 w-6 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                             onClick={(e) => editQuestion(question._id, e)}
                                         >
                                             <Pencil className="w-3 h-3" />
@@ -383,10 +435,14 @@ export function QuestionBankManager() {
                                 <div className="flex items-center gap-2 text-xs text-gray-500">
                                     {question.questionImageUrl && <ImageIcon className="w-3 h-3" />}
                                     {question.options.some(o => o.optionImageUrl) && (
-                                        <Badge variant="outline" className="text-xs">Image Options</Badge>
+                                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
+                                            Image Options
+                                        </Badge>
                                     )}
                                     {question.solutionImageUrl && (
-                                        <Badge variant="outline" className="text-xs">Solution Image</Badge>
+                                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
+                                            Solution Image
+                                        </Badge>
                                     )}
                                 </div>
 
@@ -394,7 +450,7 @@ export function QuestionBankManager() {
                                     <span className="text-xs text-gray-500">
                                         Used {question.usageCount}x
                                     </span>
-                                    <span className="text-xs font-medium text-purple-600">
+                                    <span className="text-xs font-semibold text-game-orange-600">
                                         {question.points} pt{question.points !== 1 ? 's' : ''}
                                     </span>
                                 </div>

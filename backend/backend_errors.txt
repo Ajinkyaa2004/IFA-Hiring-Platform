@@ -1,0 +1,24 @@
+2025-12-04T15:42:09.890Z - Upload Error: Failed to parse PDF: pdf is not a function
+Stack: Error: Failed to parse PDF: pdf is not a function
+    at parsePDF (file:///Users/ajinkya/Desktop/skillquest-final-updates/backend/server/services/questionGenerator.js:26:15)
+    at file:///Users/ajinkya/Desktop/skillquest-final-updates/backend/server/routes/questionGame.js:48:26
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+
+2025-12-04T15:42:14.851Z - Upload Error: Failed to parse PDF: pdf is not a function
+Stack: Error: Failed to parse PDF: pdf is not a function
+    at parsePDF (file:///Users/ajinkya/Desktop/skillquest-final-updates/backend/server/services/questionGenerator.js:26:15)
+    at file:///Users/ajinkya/Desktop/skillquest-final-updates/backend/server/routes/questionGame.js:48:26
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+
+2025-12-04T15:46:47.318Z - Upload Error: Failed to parse PDF: pdf is not a function
+Stack: Error: Failed to parse PDF: pdf is not a function
+    at parsePDF (file:///Users/ajinkya/Desktop/skillquest-final-updates/backend/server/services/questionGenerator.js:26:15)
+    at file:///Users/ajinkya/Desktop/skillquest-final-updates/backend/server/routes/questionGame.js:48:26
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+
+2025-12-04T15:46:54.395Z - Upload Error: Failed to parse PDF: pdf is not a function
+Stack: Error: Failed to parse PDF: pdf is not a function
+    at parsePDF (file:///Users/ajinkya/Desktop/skillquest-final-updates/backend/server/services/questionGenerator.js:26:15)
+    at file:///Users/ajinkya/Desktop/skillquest-final-updates/backend/server/routes/questionGame.js:48:26
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+

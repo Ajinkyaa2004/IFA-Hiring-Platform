@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle2, XCircle, FileText, Clock } from 'lucide-react';
+import { CheckCircle2, XCircle, FileText, Clock, Flag, Award, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -40,6 +40,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
     const [corrections, setCorrections] = useState<Correction[]>([]);
     const [loading, setLoading] = useState(true);
     const [startTime, setStartTime] = useState<number>(Date.now());
+    const [bookmarkedQuestions, setBookmarkedQuestions] = useState<Set<string>>(new Set());
 
     const [coverImage, setCoverImage] = useState<string | null>(null);
 
@@ -188,18 +189,99 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
 
     const answeredCount = Object.keys(answers).length;
     const progressPercentage = (answeredCount / questions.length) * 100;
+    const bookmarkedCount = bookmarkedQuestions.size;
+
+    // Calculate milestones
+    const getMilestone = () => {
+        if (progressPercentage === 100) return { text: 'Quiz Complete!', icon: Award, color: 'text-game-teal-600' };
+        if (progressPercentage >= 75) return { text: 'Almost There!', icon: Target, color: 'text-game-orange-500' };
+        if (progressPercentage >= 50) return { text: 'Halfway Done!', icon: Target, color: 'text-game-purple-500' };
+        if (progressPercentage >= 25) return { text: 'Good Start!', icon: Target, color: 'text-blue-500' };
+        return null;
+    };
+
+    const currentMilestone = getMilestone();
+
+    // Toggle bookmark
+    const toggleBookmark = (questionId: string) => {
+        setBookmarkedQuestions(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(questionId)) {
+                newSet.delete(questionId);
+                toast.info('Question unflagged for review');
+            } else {
+                newSet.add(questionId);
+                toast.success('Question flagged for review');
+            }
+            return newSet;
+        });
+    };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 py-4 sm:py-8 px-3 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="min-h-screen bg-gray-50 py-4 sm:py-6 px-3 sm:px-4">
+            {/* Quick Navigation Bar */}
+            {!isSubmitted && (
+                <motion.div
+                    initial={{ y: -100 }}
+                    animate={{ y: 0 }}
+                    className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm"
+                >
+                    <div className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <FileText className="w-5 h-5 text-game-teal-600" />
+                            <div>
+                                <p className="text-xs text-gray-500">Progress</p>
+                                <p className="text-sm font-bold text-gray-800">{answeredCount}/{questions.length}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 max-w-md">
+                            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${progressPercentage}%` }}
+                                    className="h-full bg-game-teal-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            {bookmarkedCount > 0 && (
+                                <button
+                                    onClick={() => {
+                                        const firstBookmarked = questions.findIndex(q => bookmarkedQuestions.has(q._id));
+                                        if (firstBookmarked !== -1) {
+                                            const element = document.getElementById(`question-${firstBookmarked}`);
+                                            if (element) element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }
+                                    }}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-game-orange-50 text-game-orange-600 hover:bg-game-orange-100 transition-colors text-sm font-medium"
+                                >
+                                    <Flag className="w-4 h-4" />
+                                    <span>{bookmarkedCount}</span>
+                                </button>
+                            )}
+                            <Button
+                                size="sm"
+                                onClick={handleSubmit}
+                                className="bg-game-teal-500 hover:bg-game-teal-600 text-white text-xs"
+                            >
+                                Submit Quiz
+                            </Button>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
+            <div className="max-w-5xl mx-auto" style={{ marginTop: isSubmitted ? '0' : '60px' }}>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                     {/* Main Content Area */}
                     <div className="lg:col-span-3 space-y-4 sm:space-y-6">
                         {coverImage && (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="w-full h-32 sm:h-48 md:h-56 rounded-xl overflow-hidden shadow-lg"
+                                className="w-full h-24 sm:h-32 rounded-lg overflow-hidden shadow-md"
                             >
                                 <img
                                     src={coverImage?.startsWith('data:') ? coverImage : `${BACKEND_URL}${coverImage}`}
@@ -218,17 +300,17 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                             >
-                                <Card className="bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-500 border-0 shadow-xl">
-                                    <CardContent className="pt-6 text-center text-white">
-                                        <div className="flex items-center justify-center mb-4">
-                                            <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                                                <FileText className="w-8 h-8" />
+                                <Card className="bg-game-teal-500 border-0 shadow-lg">
+                                    <CardContent className="py-6 text-center text-white">
+                                        <div className="flex items-center justify-center mb-3">
+                                            <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
+                                                <FileText className="w-6 h-6" />
                                             </div>
                                         </div>
-                                        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Quiz Complete!</h2>
-                                        <p className="text-sm sm:text-base text-white/80 mb-4">You scored</p>
-                                        <p className="text-5xl sm:text-6xl font-bold mb-6">
-                                            {score} <span className="text-2xl sm:text-3xl text-white/70">/ {maxScore}</span>
+                                        <h2 className="text-xl sm:text-2xl font-bold mb-1">Quiz Complete!</h2>
+                                        <p className="text-xs sm:text-sm text-white/80 mb-3">You scored</p>
+                                        <p className="text-4xl sm:text-5xl font-bold mb-4">
+                                            {score} <span className="text-xl sm:text-2xl text-white/70">/ {maxScore}</span>
                                         </p>
                                         <div className="flex flex-col sm:flex-row justify-center gap-3">
                                             <Button 
@@ -276,39 +358,54 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                 >
                                     <Card
                                         id={`question-${index}`}
-                                        className={`transition-all border-2 ${
+                                        className={`transition-all border ${
                                             isSubmitted 
                                                 ? isCorrect 
-                                                    ? 'border-green-400 bg-green-50/50' 
-                                                    : 'border-red-400 bg-red-50/50'
+                                                    ? 'border-green-400 bg-green-50' 
+                                                    : 'border-red-400 bg-red-50'
                                                 : isAnswered
-                                                    ? 'border-purple-300 bg-white shadow-md'
-                                                    : 'border-gray-200 bg-white hover:border-purple-200 hover:shadow-md'
+                                                    ? 'border-game-teal-400 bg-white shadow-sm'
+                                                    : 'border-gray-200 bg-white hover:border-gray-300'
                                         }`}
                                     >
-                                        <CardHeader className="pb-3">
-                                            <div className="flex items-start gap-3">
-                                                <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full shrink-0 font-bold text-sm sm:text-base ${
+                                        <CardHeader className="pb-2 pt-4">
+                                            <div className="flex items-start gap-2">
+                                                <div className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 font-bold text-xs sm:text-sm ${
                                                     isSubmitted
                                                         ? isCorrect
                                                             ? 'bg-green-500 text-white'
                                                             : 'bg-red-500 text-white'
                                                         : isAnswered
-                                                            ? 'bg-gradient-to-br from-purple-500 to-blue-500 text-white'
+                                                            ? 'bg-game-teal-500 text-white'
                                                             : 'bg-gray-100 text-gray-600'
                                                 }`}>
                                                     {index + 1}
                                                 </div>
-                                                <div className="flex-1 space-y-3">
-                                                    <CardTitle className="text-base sm:text-lg leading-relaxed text-gray-800">
-                                                        {q.text}
-                                                    </CardTitle>
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <CardTitle className="text-sm sm:text-base leading-snug text-gray-800 flex-1">
+                                                            {q.text}
+                                                        </CardTitle>
+                                                        {!isSubmitted && (
+                                                            <button
+                                                                onClick={() => toggleBookmark(q._id)}
+                                                                className={`p-1.5 rounded-md transition-all ${
+                                                                    bookmarkedQuestions.has(q._id)
+                                                                        ? 'bg-game-orange-100 text-game-orange-600 hover:bg-game-orange-200'
+                                                                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                                                                }`}
+                                                                title={bookmarkedQuestions.has(q._id) ? 'Remove flag' : 'Flag for review'}
+                                                            >
+                                                                <Flag className="w-4 h-4" fill={bookmarkedQuestions.has(q._id) ? 'currentColor' : 'none'} />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                     {q.imageUrl && (
-                                                        <div className="rounded-lg overflow-hidden bg-gray-50 p-2">
+                                                        <div className="rounded overflow-hidden bg-gray-50 p-1">
                                                             <img 
                                                                 src={q.imageUrl?.startsWith('data:') ? q.imageUrl : `${BACKEND_URL}${q.imageUrl}`} 
                                                                 alt="Question" 
-                                                                className="max-h-48 sm:max-h-64 w-full object-contain rounded" 
+                                                                className="max-h-32 sm:max-h-40 w-full object-contain rounded" 
                                                                 onError={(e) => {
                                                                     console.error('Failed to load question image:', q.imageUrl?.substring(0, 50));
                                                                     e.currentTarget.style.display = 'none';
@@ -319,12 +416,12 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                 </div>
                                             </div>
                                         </CardHeader>
-                                        <CardContent className="space-y-2 pt-0">
+                                        <CardContent className="space-y-1.5 pt-0">
                                             {q.options.map((opt, idx) => {
                                                 const isSelected = userAnswer === idx;
                                                 const isCorrectOption = isSubmitted && correction?.correctOptionIndex === idx;
 
-                                                let optionClass = "justify-start h-auto py-2.5 sm:py-3 px-3 sm:px-4 text-left w-full text-sm sm:text-base transition-all ";
+                                                let optionClass = "justify-start h-auto py-2 px-3 text-left w-full text-xs sm:text-sm transition-all ";
 
                                                 if (isSubmitted) {
                                                     if (isCorrectOption) {
@@ -336,8 +433,8 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                     }
                                                 } else {
                                                     optionClass += isSelected 
-                                                        ? "bg-gradient-to-r from-purple-100 to-blue-100 border-purple-400 text-purple-900 shadow-sm " 
-                                                        : "border-gray-200 hover:border-purple-300 hover:bg-purple-50/50 ";
+                                                        ? "bg-game-teal-50 border-game-teal-400 text-game-teal-900 " 
+                                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 ";
                                                 }
 
                                                 return (
@@ -348,18 +445,18 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                             onClick={() => handleOptionSelect(q._id, idx)}
                                                             disabled={isSubmitted}
                                                         >
-                                                            <div className="flex items-center gap-2 sm:gap-3 w-full">
-                                                                <span className="font-semibold opacity-70 shrink-0 text-xs sm:text-sm">
+                                                            <div className="flex items-center gap-2 w-full">
+                                                                <span className="font-semibold opacity-70 shrink-0 text-xs">
                                                                     {String.fromCharCode(65 + idx)}.
                                                                 </span>
                                                                 <div className="flex-1 text-left">
                                                                     {opt.text && <span className="block break-words">{opt.text}</span>}
                                                                     {opt.imageUrl && (
-                                                                        <div className="mt-2 rounded overflow-hidden bg-gray-50 p-1">
+                                                                        <div className="mt-1.5 rounded overflow-hidden bg-gray-50 p-1">
                                                                             <img 
                                                                                 src={opt.imageUrl?.startsWith('data:') ? opt.imageUrl : `${BACKEND_URL}${opt.imageUrl}`} 
                                                                                 alt={`Option ${String.fromCharCode(65 + idx)}`} 
-                                                                                className="max-h-24 sm:max-h-32 w-full object-contain rounded"
+                                                                                className="max-h-20 sm:max-h-24 w-full object-contain rounded"
                                                                                 onError={(e) => {
                                                                                     console.error('Failed to load option image:', opt.imageUrl?.substring(0, 50));
                                                                                     e.currentTarget.style.display = 'none';
@@ -371,10 +468,10 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                             </div>
                                                         </Button>
                                                         {isSubmitted && isCorrectOption && (
-                                                            <CheckCircle2 className="absolute right-2 sm:right-3 top-2 sm:top-3 text-green-600 w-4 h-4 sm:w-5 sm:h-5" />
+                                                            <CheckCircle2 className="absolute right-2 top-2 text-green-600 w-4 h-4" />
                                                         )}
                                                         {isSubmitted && isSelected && !isCorrectOption && (
-                                                            <XCircle className="absolute right-2 sm:right-3 top-2 sm:top-3 text-red-600 w-4 h-4 sm:w-5 sm:h-5" />
+                                                            <XCircle className="absolute right-2 top-2 text-red-600 w-4 h-4" />
                                                         )}
                                                     </div>
                                                 );
@@ -384,10 +481,10 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                 <motion.div
                                                     initial={{ opacity: 0, height: 0 }}
                                                     animate={{ opacity: 1, height: 'auto' }}
-                                                    className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-900 text-xs sm:text-sm rounded-lg border border-blue-200"
+                                                    className="mt-2 p-2 bg-blue-50 text-blue-900 text-xs rounded border border-blue-200"
                                                 >
-                                                    <strong className="block mb-1">💡 Explanation:</strong>
-                                                    <span className="text-blue-800">{correction.explanation}</span>
+                                                    <strong className="block mb-0.5 text-xs">💡 Explanation:</strong>
+                                                    <span className="text-blue-800 text-xs">{correction.explanation}</span>
                                                 </motion.div>
                                             )}
                                         </CardContent>
@@ -400,12 +497,12 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="flex justify-center pt-6 pb-8 sm:pb-12"
+                                className="flex justify-center pt-4 pb-6"
                             >
                                 <Button 
-                                    size="lg" 
+                                    size="default" 
                                     onClick={handleSubmit} 
-                                    className="w-full sm:w-auto px-8 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 hover:from-purple-700 hover:via-blue-700 hover:to-cyan-700 text-white shadow-lg"
+                                    className="w-full sm:w-auto px-8 bg-game-teal-500 hover:bg-game-teal-600 text-white"
                                 >
                                     Submit Quiz
                                 </Button>
@@ -417,39 +514,68 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                     <div className="lg:col-span-1">
                         <div className="sticky top-4 space-y-4">
                             {/* Progress Card */}
-                            <Card className="border-2 border-purple-200 bg-white shadow-lg">
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-                                        <FileText className="w-5 h-5 text-purple-600" />
+                            <Card className="border border-gray-200 bg-white shadow-sm">
+                                <CardHeader className="pb-2 pt-3">
+                                    <CardTitle className="text-sm flex items-center gap-2">
+                                        <FileText className="w-4 h-4 text-game-teal-600" />
                                         Progress
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
+                                <CardContent className="space-y-3">
                                     <div>
-                                        <div className="flex justify-between text-sm mb-2">
+                                        <div className="flex justify-between text-xs mb-1.5">
                                             <span className="text-gray-600">Answered</span>
-                                            <span className="font-bold text-purple-600">
+                                            <span className="font-bold text-game-teal-600">
                                                 {answeredCount}/{questions.length}
                                             </span>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                                             <motion.div 
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${progressPercentage}%` }}
                                                 transition={{ duration: 0.5 }}
-                                                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 rounded-full"
+                                                className="h-full bg-game-teal-500 rounded-full"
                                             />
                                         </div>
                                     </div>
 
+                                    {/* Milestone Achievement */}
+                                    {currentMilestone && (
+                                        <motion.div
+                                            initial={{ scale: 0.8, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            className="p-2 bg-gradient-to-r from-game-teal-50 to-game-purple-50 rounded-lg border border-game-teal-200"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <currentMilestone.icon className={`w-4 h-4 ${currentMilestone.color}`} />
+                                                <span className="text-xs font-semibold text-gray-700">{currentMilestone.text}</span>
+                                            </div>
+                                        </motion.div>
+                                    )}
+
+                                    {/* Bookmarked Questions */}
+                                    {!isSubmitted && bookmarkedCount > 0 && (
+                                        <div className="p-2 bg-game-orange-50 rounded-lg border border-game-orange-200">
+                                            <div className="flex items-center justify-between mb-1.5">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Flag className="w-3.5 h-3.5 text-game-orange-600" />
+                                                    <span className="text-xs font-semibold text-game-orange-800">Flagged</span>
+                                                </div>
+                                                <span className="text-xs font-bold text-game-orange-600">{bookmarkedCount}</span>
+                                            </div>
+                                            <p className="text-xs text-gray-600">Review these later</p>
+                                        </div>
+                                    )}
+
                                     {/* Question Grid */}
                                     <div>
-                                        <p className="text-xs text-gray-500 mb-2">Questions</p>
-                                        <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+                                        <p className="text-xs text-gray-500 mb-1.5">Questions</p>
+                                        <div className="grid grid-cols-5 gap-1.5">
                                             {questions.map((q, index) => {
                                                 const isAnswered = answers[q._id] !== undefined;
                                                 const correction = corrections.find(c => c.questionId === q._id);
                                                 const isCorrect = isSubmitted && correction && answers[q._id] === correction.correctOptionIndex;
+                                                const isBookmarked = bookmarkedQuestions.has(q._id);
                                                 
                                                 return (
                                                     <motion.button
@@ -462,19 +588,22 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                                             }
                                                         }}
-                                                        className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
+                                                        className={`aspect-square rounded flex items-center justify-center text-xs font-bold transition-all relative ${
                                                             isSubmitted
                                                                 ? isCorrect
-                                                                    ? 'bg-green-500 text-white shadow-sm'
+                                                                    ? 'bg-green-500 text-white'
                                                                     : isAnswered
-                                                                        ? 'bg-red-500 text-white shadow-sm'
+                                                                        ? 'bg-red-500 text-white'
                                                                         : 'bg-gray-200 text-gray-400'
                                                                 : isAnswered
-                                                                    ? 'bg-gradient-to-br from-purple-500 to-blue-500 text-white shadow-md'
+                                                                    ? 'bg-game-teal-500 text-white'
                                                                     : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                                                         }`}
                                                     >
                                                         {index + 1}
+                                                        {isBookmarked && !isSubmitted && (
+                                                            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-game-orange-500 rounded-full border border-white" />
+                                                        )}
                                                     </motion.button>
                                                 );
                                             })}
@@ -482,15 +611,15 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                     </div>
 
                                     {/* Legend */}
-                                    <div className="text-xs space-y-1.5 pt-2 border-t">
+                                    <div className="text-xs space-y-1 pt-2 border-t">
                                         {!isSubmitted ? (
                                             <>
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-4 h-4 rounded bg-gradient-to-br from-purple-500 to-blue-500"></div>
+                                                    <div className="w-3 h-3 rounded bg-game-teal-500"></div>
                                                     <span className="text-gray-600">Answered</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-4 h-4 rounded bg-gray-100"></div>
+                                                    <div className="w-3 h-3 rounded bg-gray-100"></div>
                                                     <span className="text-gray-600">Pending</span>
                                                 </div>
                                             </>
@@ -512,15 +641,15 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
 
                             {/* Timer Card (if you want to add it) */}
                             {!isSubmitted && (
-                                <Card className="border-2 border-cyan-200 bg-white shadow-lg">
-                                    <CardContent className="pt-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg">
-                                                <Clock className="w-5 h-5 text-white" />
+                                <Card className="border border-gray-200 bg-white shadow-sm">
+                                    <CardContent className="py-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="p-1.5 bg-game-orange-500 rounded">
+                                                <Clock className="w-4 h-4 text-white" />
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-500">Time Elapsed</p>
-                                                <p className="text-lg font-bold text-gray-800">
+                                                <p className="text-sm font-bold text-gray-800">
                                                     {Math.floor((Date.now() - startTime) / 60000)}:{String(Math.floor(((Date.now() - startTime) % 60000) / 1000)).padStart(2, '0')}
                                                 </p>
                                             </div>
