@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -42,7 +42,6 @@ export function QuestionBankManager() {
     const [difficultyFilter, setDifficultyFilter] = useState('All');
     const [quizTitle, setQuizTitle] = useState('');
     const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
-    const [showCreateQuizModal, setShowCreateQuizModal] = useState(false);
 
     useEffect(() => {
         fetchQuestions();
@@ -373,7 +372,7 @@ export function QuestionBankManager() {
                             <CardContent className="space-y-3">
                                 {question.questionImageUrl ? (
                                     <img 
-                                        src={`${BACKEND_URL}${question.questionImageUrl}`} 
+                                        src={question.questionImageUrl?.startsWith('data:') ? question.questionImageUrl : `${BACKEND_URL}${question.questionImageUrl}`} 
                                         alt="Question" 
                                         className="w-full h-32 object-contain rounded border"
                                     />
