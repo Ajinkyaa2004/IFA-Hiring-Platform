@@ -331,7 +331,7 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-screen bg-gradient-to-br from-[#f3f0fc] via-[#faf9fc] to-[#f3f0fc] flex flex-col items-center justify-center p-6 relative overflow-hidden"
+      className="min-h-screen bg-gradient-to-br from-[#f3f0fc] via-[#faf9fc] to-[#f3f0fc] flex flex-col items-center justify-center p-2 sm:p-4 lg:p-6 relative overflow-hidden"
     >
       {/* Animated Background Orbs */}
       <div className="absolute -z-10 top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
@@ -368,9 +368,9 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
           rotate: [0, 10, 0],
         }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-20 left-10 pointer-events-none"
+        className="absolute top-20 left-10 pointer-events-none hidden sm:block"
       >
-        <Sparkles className="w-8 h-8 text-[#8558ed]/30" />
+        <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-[#8558ed]/30" />
       </motion.div>
       <motion.div
         animate={{
@@ -378,9 +378,9 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
           rotate: [0, -10, 0],
         }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        className="absolute top-32 right-16 pointer-events-none"
+        className="absolute top-32 right-16 pointer-events-none hidden sm:block"
       >
-        <Zap className="w-10 h-10 text-[#b18aff]/30" />
+        <Zap className="w-8 h-8 sm:w-10 sm:h-10 text-[#b18aff]/30" />
       </motion.div>
       <motion.div
         animate={{
@@ -388,9 +388,9 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
           rotate: [0, 15, 0],
         }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        className="absolute bottom-24 left-20 pointer-events-none"
+        className="absolute bottom-24 left-20 pointer-events-none hidden sm:block"
       >
-        <Star className="w-7 h-7 text-[#8558ed]/30" />
+        <Star className="w-5 h-5 sm:w-7 sm:h-7 text-[#8558ed]/30" />
       </motion.div>
       <motion.div
         animate={{
@@ -398,9 +398,9 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
           rotate: [0, -12, 0],
         }}
         transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-        className="absolute bottom-32 right-24 pointer-events-none"
+        className="absolute bottom-32 right-24 pointer-events-none hidden sm:block"
       >
-        <Target className="w-9 h-9 text-[#b18aff]/30" />
+        <Target className="w-7 h-7 sm:w-9 sm:h-9 text-[#b18aff]/30" />
       </motion.div>
 
       {/* Header */}
@@ -408,22 +408,23 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="text-center mb-8"
+        className="text-center mb-4 sm:mb-6 lg:mb-8"
       >
         <motion.h1
-          className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#8558ed] via-[#b18aff] to-[#8558ed] 
-           animate-gradient-x drop-shadow-[0_0_25px_rgba(133,88,237,0.3)] tracking-tight mb-2 flex items-center justify-center gap-3"
+          className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#8558ed] via-[#b18aff] to-[#8558ed] 
+           animate-gradient-x drop-shadow-[0_0_25px_rgba(133,88,237,0.3)] tracking-tight mb-2 flex items-center justify-center gap-2 sm:gap-3"
         >
-          <Droplets className="w-12 h-12 text-[#8558ed]" />
-          Water Capacity Quest
+          <Droplets className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-[#8558ed]" />
+          <span className="hidden sm:inline">Water Capacity Quest</span>
+          <span className="sm:hidden">Water Capacity</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="text-[#8558ed]/80 font-medium flex items-center justify-center gap-2"
+          className="text-xs sm:text-sm lg:text-base text-[#8558ed]/80 font-medium flex items-center justify-center gap-2"
         >
-          <Droplet className="w-5 h-5" />
+          <Droplet className="w-4 h-4 sm:w-5 sm:h-5" />
           Measure the exact amount of water!
         </motion.p>
       </motion.div>
@@ -433,80 +434,80 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="flex items-center gap-4 mb-6 flex-wrap justify-center"
+        className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 justify-center w-full max-w-4xl px-2"
       >
         <motion.div
           whileHover={{ scale: 1.05, y: -2 }}
-          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="bg-gradient-to-tr from-[#8558ed] to-[#b18aff] w-10 h-10 rounded-full flex items-center justify-center"
+              className="bg-gradient-to-tr from-[#8558ed] to-[#b18aff] w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
             >
-              <Trophy className="w-5 h-5 text-white" />
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </motion.div>
             <div>
-              <div className="text-xs text-[#030303]/60 font-medium">Puzzle</div>
-              <div className="text-2xl font-bold text-[#8558ed]">{currentPuzzle + 1}</div>
+              <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Puzzle</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-[#8558ed]">{currentPuzzle + 1}</div>
             </div>
           </div>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.05, y: -2 }}
-          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="bg-gradient-to-tr from-green-500 to-emerald-500 w-10 h-10 rounded-full flex items-center justify-center"
+              className="bg-gradient-to-tr from-green-500 to-emerald-500 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
             >
-              <Star className="w-5 h-5 text-white" />
+              <Star className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </motion.div>
             <div>
-              <div className="text-xs text-[#030303]/60 font-medium">Completed</div>
-              <div className="text-2xl font-bold text-green-600">{puzzlesCompleted}</div>
+              <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Done</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">{puzzlesCompleted}</div>
             </div>
           </div>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.05, y: -2 }}
-          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.div
               animate={{ rotate: [0, -10, 10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="bg-gradient-to-tr from-blue-500 to-cyan-500 w-10 h-10 rounded-full flex items-center justify-center"
+              className="bg-gradient-to-tr from-blue-500 to-cyan-500 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
             >
-              <Target className="w-5 h-5 text-white" />
+              <Target className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </motion.div>
             <div>
-              <div className="text-xs text-[#030303]/60 font-medium">Steps</div>
-              <div className="text-2xl font-bold text-blue-600">{steps}</div>
+              <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Steps</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600">{steps}</div>
             </div>
           </div>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.05, y: -2 }}
-          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="bg-gradient-to-tr from-yellow-500 to-orange-500 w-10 h-10 rounded-full flex items-center justify-center"
+              className="bg-gradient-to-tr from-yellow-500 to-orange-500 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
             >
-              <Zap className="w-5 h-5 text-white" />
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </motion.div>
             <div>
-              <div className="text-xs text-[#030303]/60 font-medium">Score</div>
-              <div className="text-2xl font-bold text-orange-600">{score}</div>
+              <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Score</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600">{score}</div>
             </div>
           </div>
         </motion.div>
@@ -520,25 +521,25 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
             animate={{ scale: 1, rotate: 0 }}
             exit={{ scale: 0, rotate: 180 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="mb-4"
+            className="mb-3 sm:mb-4 px-2"
           >
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 0.6, repeat: Infinity }}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-2xl shadow-2xl shadow-green-500/30 flex items-center gap-3"
+              className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-2xl shadow-green-500/30 flex items-center gap-2 sm:gap-3"
             >
               <motion.span
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               >
-                <Sparkles className="w-8 h-8 text-[#8558ed]" />
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </motion.span>
-              <span className="text-2xl font-bold">Puzzle Solved!</span>
+              <span className="text-lg sm:text-xl lg:text-2xl font-bold">Puzzle Solved!</span>
               <motion.span
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               >
-                <CheckCircle2 className="w-8 h-8 text-green-500" />
+                <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </motion.span>
             </motion.div>
           </motion.div>
@@ -546,34 +547,34 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
       </AnimatePresence>
 
       {/* Game Board and Instructions Side by Side */}
-      <div className="flex items-start gap-8 justify-center">
+      <div className="flex flex-col lg:flex-row items-start gap-4 sm:gap-6 lg:gap-8 justify-center w-full max-w-6xl px-2">
         {/* Instructions - Left Side */}
         <motion.div
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="w-64"
+          className="w-full lg:w-64 order-2 lg:order-1"
         >
-          <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg shadow-[#8558ed]/10 sticky top-8">
+          <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg shadow-[#8558ed]/10 lg:sticky lg:top-8">
             <div className="flex items-center justify-center gap-2 mb-3">
-              <Target className="w-5 h-5 text-[#8558ed]" />
-              <h3 className="text-lg font-bold text-[#8558ed]">How to Play</h3>
+              <Target className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed]" />
+              <h3 className="text-base sm:text-lg font-bold text-[#8558ed]">How to Play</h3>
             </div>
-            <div className="space-y-2 text-sm text-[#030303]/70">
+            <div className="space-y-2 text-xs sm:text-sm text-[#030303]/70">
               <p className="flex items-center gap-2">
-                <Droplet className="w-5 h-5 text-[#8558ed]" />
+                <Droplet className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed] flex-shrink-0" />
                 <span><strong>Fill</strong> jugs to their capacity</span>
               </p>
               <p className="flex items-center gap-2">
-                <Droplets className="w-5 h-5 text-[#8558ed]" />
+                <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed] flex-shrink-0" />
                 <span><strong>Empty</strong> jugs completely</span>
               </p>
               <p className="flex items-center gap-2">
-                <ArrowRightLeft className="w-5 h-5 text-[#8558ed]" />
+                <ArrowRightLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed] flex-shrink-0" />
                 <span><strong>Pour</strong> water between jugs</span>
               </p>
               <p className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-[#8558ed]" />
+                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed] flex-shrink-0" />
                 <span>Reach the <strong>exact target</strong> amount!</span>
               </p>
             </div>
@@ -585,35 +586,38 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-3xl p-8 shadow-2xl shadow-[#8558ed]/20"
+          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl shadow-[#8558ed]/20 order-1 lg:order-2 w-full lg:w-auto overflow-x-auto"
         >
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="text-center mb-6 p-4 bg-gradient-to-r from-[#8558ed]/10 to-[#b18aff]/10 rounded-2xl border-2 border-[#8558ed]/20"
+            className="text-center mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-[#8558ed]/10 to-[#b18aff]/10 rounded-xl sm:rounded-2xl border-2 border-[#8558ed]/20"
           >
-            <p className="text-lg font-bold text-[#030303] flex items-center justify-center gap-2">
-              <Target className="w-6 h-6 text-[#8558ed]" />
-              Goal: Get exactly <span className="text-[#8558ed] text-3xl mx-2">{activePuzzle.target}L</span> in Jug {activePuzzle.targetJug + 1}
+            <p className="text-sm sm:text-base lg:text-lg font-bold text-[#030303] flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+              <Target className="w-5 h-5 sm:w-6 sm:h-6 text-[#8558ed]" />
+              <span className="hidden sm:inline">Goal: Get exactly</span>
+              <span className="sm:hidden">Get</span>
+              <span className="text-[#8558ed] text-2xl sm:text-3xl mx-1 sm:mx-2">{activePuzzle.target}L</span>
+              <span>in Jug {activePuzzle.targetJug + 1}</span>
             </p>
           </motion.div>
 
-          <div className="flex justify-center gap-12">
+          <div className="flex justify-center gap-4 sm:gap-8 lg:gap-12 flex-wrap">
             {jugs.map((jug, index) => (
               <motion.div
                 key={jug.id}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.6 + index * 0.1, type: "spring", stiffness: 200 }}
-                className="flex flex-col items-center space-y-4"
+                className="flex flex-col items-center space-y-3 sm:space-y-4"
               >
-                <div className="text-lg font-bold text-[#8558ed]">Jug {index + 1}</div>
+                <div className="text-base sm:text-lg font-bold text-[#8558ed]">Jug {index + 1}</div>
 
                 {/* Jug visualization */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
-                  className="relative w-28 h-56 border-4 border-[#8558ed] rounded-b-2xl bg-gradient-to-b from-white/80 to-gray-100/80 overflow-hidden shadow-xl"
+                  className="relative w-20 h-40 sm:w-24 sm:h-48 lg:w-28 lg:h-56 border-3 sm:border-4 border-[#8558ed] rounded-b-xl sm:rounded-b-2xl bg-gradient-to-b from-white/80 to-gray-100/80 overflow-hidden shadow-xl"
                 >
                   <motion.div
                     className={`absolute bottom-0 w-full ${jug.color} transition-all duration-500`}
@@ -626,7 +630,7 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
                   <div className="absolute inset-0 flex items-center justify-center">
                     <motion.span
                       whileHover={{ scale: 1.1 }}
-                      className="text-xl font-extrabold text-[#030303] bg-white/90 px-3 py-1 rounded-lg shadow-lg border-2 border-[#8558ed]/30"
+                      className="text-sm sm:text-lg lg:text-xl font-extrabold text-[#030303] bg-white/90 px-2 sm:px-3 py-1 rounded-md sm:rounded-lg shadow-lg border-2 border-[#8558ed]/30"
                     >
                       {jug.current}/{jug.capacity}L
                     </motion.span>
@@ -634,14 +638,14 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
                 </motion.div>
 
                 {/* Action buttons */}
-                <div className="flex flex-col space-y-2 w-full">
+                <div className="flex flex-col space-y-1.5 sm:space-y-2 w-full">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
                       onClick={() => fillJug(jug.id)}
                       disabled={jug.current === jug.capacity}
-                      className="w-full bg-gradient-to-r from-[#8558ed] to-[#b18aff] hover:from-[#7347d6] hover:to-[#a179f0] text-white disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full bg-gradient-to-r from-[#8558ed] to-[#b18aff] hover:from-[#7347d6] hover:to-[#a179f0] text-white disabled:opacity-50 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
                     >
-                      <Droplet className="w-4 h-4" />
+                      <Droplet className="w-3 h-3 sm:w-4 sm:h-4" />
                       Fill
                     </Button>
                   </motion.div>
@@ -650,9 +654,9 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
                       onClick={() => emptyJug(jug.id)}
                       disabled={jug.current === 0}
                       variant="outline"
-                      className="w-full border-2 border-[#8558ed]/30 hover:bg-[#8558ed]/10 disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full border-2 border-[#8558ed]/30 hover:bg-[#8558ed]/10 disabled:opacity-50 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
                     >
-                      <Droplets className="w-4 h-4" />
+                      <Droplets className="w-3 h-3 sm:w-4 sm:h-4" />
                       Empty
                     </Button>
                   </motion.div>
@@ -663,7 +667,7 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
                           onClick={() => pourJug(jug.id, targetJug.id)}
                           disabled={jug.current === 0 || targetJug.current === targetJug.capacity}
                           variant="secondary"
-                          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white disabled:opacity-50"
+                          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white disabled:opacity-50 text-xs sm:text-sm py-1.5 sm:py-2"
                         >
                           Pour → {targetJug.id + 1}
                         </Button>
@@ -679,11 +683,11 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="mt-8 flex justify-center"
+            className="mt-6 sm:mt-8 flex justify-center"
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button onClick={resetPuzzle} variant="outline" className="border-2 border-[#8558ed]/30 hover:bg-[#8558ed]/10">
-                <RotateCcw className="w-4 h-4 mr-2" />
+              <Button onClick={resetPuzzle} variant="outline" className="border-2 border-[#8558ed]/30 hover:bg-[#8558ed]/10 text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2">
+                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Reset Puzzle
               </Button>
             </motion.div>

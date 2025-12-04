@@ -350,6 +350,7 @@ export const Results: React.FC = () => {
                           <span className="text-xs font-semibold text-gray-600">Score</span>
                           <span className={`text-2xl font-extrabold ${getScoreColor(game.score.puzzlesCompleted)}`}>
                             {game.score.puzzlesCompleted}
+                            {game.score.maxScore && <span className="text-sm text-gray-500">/{game.score.maxScore}</span>}
                           </span>
                         </div>
                         
@@ -442,7 +443,7 @@ export const Results: React.FC = () => {
             <CardContent className="space-y-3">
               {/* Game completion status */}
               {games.map((game) => {
-                const completed = game.score && game.score.puzzlesCompleted > 0;
+                const completed = game.score && game.score.timeSpent !== undefined && game.score.timeSpent !== null;
                 return (
                   <div key={game.type} className="flex items-start gap-3 p-3 bg-gradient-to-r from-[#8558ed]/5 to-transparent rounded-xl border border-[#8558ed]/10">
                     {completed ? (
@@ -452,7 +453,9 @@ export const Results: React.FC = () => {
                     )}
                     <p className="text-gray-700 font-medium">
                       {game.title}: {completed 
-                        ? `Completed ${game.score?.puzzlesCompleted} puzzle${game.score?.puzzlesCompleted !== 1 ? 's' : ''}`
+                        ? game.type === 'question-game' 
+                          ? `Scored ${game.score?.puzzlesCompleted}${game.score?.maxScore ? `/${game.score.maxScore}` : ''} points`
+                          : `Completed ${game.score?.puzzlesCompleted} puzzle${game.score?.puzzlesCompleted !== 1 ? 's' : ''}`
                         : 'Not completed - terminated or no puzzles solved'
                       }
                     </p>

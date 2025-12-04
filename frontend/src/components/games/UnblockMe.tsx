@@ -28,7 +28,16 @@ type Level = {
 
 export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining, isTrialMode = false }) => {
   const GRID_SIZE = 6;
-  const CELL_SIZE = 80;
+  // Responsive cell size based on screen width
+  const getCellSize = () => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 640) return 50; // mobile
+      if (window.innerWidth < 1024) return 60; // tablet
+      return 65; // desktop (reduced from 80)
+    }
+    return 65;
+  };
+  const [CELL_SIZE, setCellSize] = useState(getCellSize());
   const TOTAL_TIME = 300;
   const navigate = useNavigate();
 
@@ -593,6 +602,15 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
     hasInitializedRef.current = true;
   }, []);
 
+  // Handle window resize for responsive cell size
+  useEffect(() => {
+    const handleResize = () => {
+      setCellSize(getCellSize());
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Handle time running out
   useEffect(() => {
     if (timeRemaining === 0 && !isTrialMode && !hasCompletedRef.current) {
@@ -953,83 +971,83 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex items-center gap-4 mb-6 flex-wrap justify-center"
+          className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 justify-center"
         >
           <motion.div
             whileHover={{ scale: 1.05, y: -2 }}
-            className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+            className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 md:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="bg-gradient-to-tr from-[#8558ed] to-[#b18aff] w-10 h-10 rounded-full flex items-center justify-center"
+                className="bg-gradient-to-tr from-[#8558ed] to-[#b18aff] w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
               >
-                <Trophy className="w-5 h-5 text-white" />
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </motion.div>
               <div>
-                <div className="text-xs text-[#030303]/60 font-medium">{selectedLevels[currentLevel]?.name} - {selectedLevels[currentLevel]?.difficulty}</div>
-                <div className="text-2xl font-bold text-[#8558ed]">Level {currentLevel + 1}</div>
+                <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">{selectedLevels[currentLevel]?.name} - {selectedLevels[currentLevel]?.difficulty}</div>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#8558ed]">Level {currentLevel + 1}</div>
               </div>
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ scale: 1.05, y: -2 }}
-            className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+            className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 md:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="bg-gradient-to-tr from-green-500 to-emerald-500 w-10 h-10 rounded-full flex items-center justify-center"
+                className="bg-gradient-to-tr from-green-500 to-emerald-500 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
               >
-                <Star className="w-5 h-5 text-white" />
+                <Star className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </motion.div>
               <div>
-                <div className="text-xs text-[#030303]/60 font-medium">Total Score</div>
-                <div className="text-2xl font-bold text-green-600">{score}</div>
+                <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Total Score</div>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{score}</div>
               </div>
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ scale: 1.05, y: -2 }}
-            className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+            className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 md:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="bg-gradient-to-tr from-yellow-500 to-orange-500 w-10 h-10 rounded-full flex items-center justify-center"
+                className="bg-gradient-to-tr from-yellow-500 to-orange-500 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
               >
-                <Zap className="w-5 h-5 text-white" />
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </motion.div>
               <div>
-                <div className="text-xs text-[#030303]/60 font-medium">Level Score</div>
-                <div className="text-2xl font-bold text-orange-600">{lastLevelScore}</div>
+                <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Level Score</div>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">{lastLevelScore}</div>
               </div>
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ scale: 1.05, y: -2 }}
-            className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+            className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 md:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <motion.div
                 animate={{ rotate: [0, -10, 10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="bg-gradient-to-tr from-blue-500 to-cyan-500 w-10 h-10 rounded-full flex items-center justify-center"
+                className="bg-gradient-to-tr from-blue-500 to-cyan-500 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
               >
-                <Target className="w-5 h-5 text-white" />
+                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </motion.div>
               <div>
-                <div className="text-xs text-[#030303]/60 font-medium">Moves</div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Moves</div>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">
                   {moves}
                   {levelComplete && moves > selectedLevels[currentLevel]?.optimalMoves && (
-                    <span className="text-lg text-orange-500 ml-1">
+                    <span className="text-sm sm:text-base md:text-lg text-orange-500 ml-1">
                       (+{moves - selectedLevels[currentLevel]?.optimalMoves})
                     </span>
                   )}
@@ -1075,34 +1093,34 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
         </AnimatePresence>
 
         {/* Game Board and Instructions Side by Side */}
-        <div className="flex items-start gap-8 justify-center">
+        <div className="flex flex-col lg:flex-row items-start gap-4 sm:gap-6 lg:gap-8 justify-center">
           {/* Instructions - Left Side */}
           <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="w-64"
+            className="w-full lg:w-64 order-2 lg:order-1"
           >
-            <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg shadow-[#8558ed]/10 sticky top-8">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <Target className="w-5 h-5 text-[#8558ed]" />
-                <h3 className="text-lg font-bold text-[#8558ed]">How to Play</h3>
+            <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg shadow-[#8558ed]/10">
+              <div className="flex items-center justify-center gap-2 mb-2 sm:mb-3">
+                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed]" />
+                <h3 className="text-base sm:text-lg font-bold text-[#8558ed]">How to Play</h3>
               </div>
-              <div className="space-y-2 text-sm text-[#030303]/70">
+              <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-[#030303]/70">
                 <p className="flex items-center gap-2">
-                  <MousePointer className="w-5 h-5 text-[#8558ed]" />
+                  <MousePointer className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed]" />
                   <span><strong>Click a block</strong> to select it</span>
                 </p>
                 <p className="flex items-center gap-2">
-                  <Keyboard className="w-5 h-5 text-[#8558ed]" />
+                  <Keyboard className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed]" />
                   <span><strong>Drag blocks</strong> to move them</span>
                 </p>
                 <p className="flex items-center gap-2">
-                  <Car className="w-5 h-5 text-[#8558ed]" />
+                  <Car className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed]" />
                   <span><strong>Move the red car</strong> to the exit!</span>
                 </p>
                 <p className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-[#8558ed]" />
+                  <Target className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed]" />
                   <span>Complete in <strong>≤{selectedLevels[currentLevel]?.optimalMoves} moves</strong></span>
                 </p>
               </div>
@@ -1114,20 +1132,22 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            className="order-1 lg:order-2 mx-auto"
           >
             <div
               className="relative"
               style={{
-                width: GRID_SIZE * CELL_SIZE + 48 + 40 + 8,
-                height: GRID_SIZE * CELL_SIZE + 48,
+                width: GRID_SIZE * CELL_SIZE + (CELL_SIZE < 65 ? 32 : 48) + (CELL_SIZE < 65 ? 30 : 40) + 8,
+                height: GRID_SIZE * CELL_SIZE + (CELL_SIZE < 65 ? 32 : 48),
               }}
             >
               <div
                 ref={gridRef}
-                className="absolute rounded-2xl bg-gradient-to-br from-amber-100 via-amber-50 to-yellow-100 p-6 shadow-2xl shadow-[#8558ed]/20 overflow-hidden border-2 border-white/40"
+                className="absolute rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-100 via-amber-50 to-yellow-100 shadow-2xl shadow-[#8558ed]/20 overflow-hidden border-2 border-white/40"
                 style={{
-                  width: GRID_SIZE * CELL_SIZE + 48,
-                  height: GRID_SIZE * CELL_SIZE + 48,
+                  width: GRID_SIZE * CELL_SIZE + (CELL_SIZE < 65 ? 32 : 48),
+                  height: GRID_SIZE * CELL_SIZE + (CELL_SIZE < 65 ? 32 : 48),
+                  padding: CELL_SIZE < 65 ? '16px' : '24px',
                   left: 0,
                   top: 0,
                 }}
@@ -1137,8 +1157,9 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
               >
                 {/* Grid cells */}
                 <div
-                  className="absolute inset-6 grid"
+                  className="absolute grid"
                   style={{
+                    inset: CELL_SIZE < 65 ? '16px' : '24px',
                     gridTemplateColumns: `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`,
                     gridTemplateRows: `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`,
                   }}
@@ -1158,12 +1179,12 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
                       key={block.id}
                       onMouseDown={(e) => handleMouseDown(block.id, e)}
                       whileHover={{ scale: isDragging ? 1 : 1.02 }}
-                      className={`absolute rounded-xl shadow-lg cursor-grab active:cursor-grabbing select-none ${getBlockColor(
+                      className={`absolute rounded-lg sm:rounded-xl shadow-lg cursor-grab active:cursor-grabbing select-none ${getBlockColor(
                         block
-                      )} ${isDragging ? 'shadow-2xl z-30 ring-4 ring-white/50' : 'hover:shadow-xl z-10'}`}
+                      )} ${isDragging ? 'shadow-2xl z-30 ring-2 sm:ring-4 ring-white/50' : 'hover:shadow-xl z-10'}`}
                       style={{
-                        top: position.top + 24,
-                        left: position.left + 24,
+                        top: position.top + (CELL_SIZE < 65 ? 16 : 24),
+                        left: position.left + (CELL_SIZE < 65 ? 16 : 24),
                         width: block.isHorizontal ? block.length * CELL_SIZE : CELL_SIZE,
                         height: block.isHorizontal ? CELL_SIZE : block.length * CELL_SIZE,
                         transition: 'top 80ms ease-out, left 80ms ease-out',
@@ -1174,7 +1195,8 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
                           <motion.svg
                             animate={{ rotate: [0, -5, 5, 0] }}
                             transition={{ duration: 2, repeat: Infinity }}
-                            className="h-12 w-12 text-white drop-shadow-2xl"
+                            className="text-white drop-shadow-2xl"
+                            style={{ width: CELL_SIZE * 0.6, height: CELL_SIZE * 0.6 }}
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
@@ -1206,19 +1228,20 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
-                className="absolute flex items-center justify-center bg-gradient-to-r from-green-500 to-emerald-500 rounded-r-xl shadow-xl z-50"
+                className="absolute flex items-center justify-center bg-gradient-to-r from-green-500 to-emerald-500 rounded-r-lg sm:rounded-r-xl shadow-xl z-50"
                 style={{
-                  left: GRID_SIZE * CELL_SIZE + 48 + 8,
-                  top: 24 + 2 * CELL_SIZE + (CELL_SIZE - 80) / 2,
-                  width: 40,
-                  height: 80,
+                  left: GRID_SIZE * CELL_SIZE + (CELL_SIZE < 65 ? 32 : 48) + 8,
+                  top: (CELL_SIZE < 65 ? 16 : 24) + 2 * CELL_SIZE + (CELL_SIZE - CELL_SIZE) / 2,
+                  width: CELL_SIZE < 65 ? 30 : 40,
+                  height: CELL_SIZE,
                 }}
                 aria-label="Exit"
               >
                 <motion.svg
                   animate={{ x: [0, 5, 0] }}
                   transition={{ duration: 1, repeat: Infinity }}
-                  className="h-8 w-8 text-white drop-shadow-lg"
+                  className="text-white drop-shadow-lg"
+                  style={{ width: CELL_SIZE * 0.4, height: CELL_SIZE * 0.4 }}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

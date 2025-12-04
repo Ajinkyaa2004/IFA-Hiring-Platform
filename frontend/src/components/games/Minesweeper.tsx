@@ -42,6 +42,14 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
   const [score, setScore] = useState(0);
   const [levelStartTime, setLevelStartTime] = useState(timeRemaining);
   const [levelErrors, setLevelErrors] = useState(0);
+  const [cellSize, setCellSize] = useState(() => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 640) return 32; // mobile
+      if (window.innerWidth < 1024) return 40; // tablet
+      return 40; // desktop
+    }
+    return 40;
+  });
 
   // Tab switch detection - only enabled when not in trial mode
   useTabSwitchDetection({
@@ -134,6 +142,21 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     const count = calculateMineCount(mineMode, gridSize, level);
     setMineCount(count);
   }, [gridSize, mineMode, level, calculateMineCount]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setCellSize(32); // mobile
+      } else if (window.innerWidth < 1024) {
+        setCellSize(40); // tablet
+      } else {
+        setCellSize(40); // desktop
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     setGrid(initializeGrid(gridSize, mineCount));
@@ -288,9 +311,9 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
 
   const getCellText = (cell: Cell) => {
     if (!cell.isRevealed) {
-      return cell.isFlagged ? <Flag className="w-4 h-4 text-yellow-400" /> : '';
+      return cell.isFlagged ? <Flag className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400" /> : '';
     }
-    if (cell.isMine) return <Bomb className="w-4 h-4 text-white" />;
+    if (cell.isMine) return <Bomb className="w-3 h-3 sm:w-4 sm:h-4 text-white" />;
     if (cell.neighborMines === 0) return '';
     return cell.neighborMines;
   };
@@ -315,7 +338,7 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-screen bg-gradient-to-br from-[#f3f0fc] via-[#faf9fc] to-[#f3f0fc] flex flex-col items-center justify-center p-6 relative overflow-hidden"
+      className="min-h-screen bg-gradient-to-br from-[#f3f0fc] via-[#faf9fc] to-[#f3f0fc] flex flex-col items-center justify-center p-2 sm:p-4 lg:p-6 relative overflow-hidden"
     >
       {/* Animated Background Orbs */}
       <div className="absolute -z-10 top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
@@ -352,9 +375,9 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
           rotate: [0, 10, 0],
         }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-20 left-10 pointer-events-none"
+        className="absolute top-20 left-10 pointer-events-none hidden sm:block"
       >
-        <Sparkles className="w-8 h-8 text-[#8558ed]/30" />
+        <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-[#8558ed]/30" />
       </motion.div>
       <motion.div
         animate={{
@@ -362,9 +385,9 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
           rotate: [0, -10, 0],
         }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        className="absolute top-32 right-16 pointer-events-none"
+        className="absolute top-32 right-16 pointer-events-none hidden sm:block"
       >
-        <Zap className="w-10 h-10 text-[#b18aff]/30" />
+        <Zap className="w-8 h-8 sm:w-10 sm:h-10 text-[#b18aff]/30" />
       </motion.div>
       <motion.div
         animate={{
@@ -372,9 +395,9 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
           rotate: [0, 15, 0],
         }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        className="absolute bottom-24 left-20 pointer-events-none"
+        className="absolute bottom-24 left-20 pointer-events-none hidden sm:block"
       >
-        <Star className="w-7 h-7 text-[#8558ed]/30" />
+        <Star className="w-5 h-5 sm:w-7 sm:h-7 text-[#8558ed]/30" />
       </motion.div>
       <motion.div
         animate={{
@@ -382,9 +405,9 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
           rotate: [0, -12, 0],
         }}
         transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-        className="absolute bottom-32 right-24 pointer-events-none"
+        className="absolute bottom-32 right-24 pointer-events-none hidden sm:block"
       >
-        <Target className="w-9 h-9 text-[#b18aff]/30" />
+        <Target className="w-7 h-7 sm:w-9 sm:h-9 text-[#b18aff]/30" />
       </motion.div>
 
       {/* Header */}
@@ -392,22 +415,23 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="text-center mb-8"
+        className="text-center mb-4 sm:mb-6 lg:mb-8"
       >
         <motion.h1
-          className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#8558ed] via-[#b18aff] to-[#8558ed] 
-           animate-gradient-x drop-shadow-[0_0_25px_rgba(133,88,237,0.3)] tracking-tight mb-2 flex items-center justify-center gap-3"
+          className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#8558ed] via-[#b18aff] to-[#8558ed] 
+           animate-gradient-x drop-shadow-[0_0_25px_rgba(133,88,237,0.3)] tracking-tight mb-2 flex items-center justify-center gap-2 sm:gap-3"
         >
-          <Target className="w-12 h-12 text-[#8558ed]" />
-          Minesweeper Quest
+          <Target className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-[#8558ed]" />
+          <span className="hidden sm:inline">Minesweeper Quest</span>
+          <span className="sm:hidden">Minesweeper</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="text-[#8558ed]/80 font-medium flex items-center justify-center gap-2"
+          className="text-xs sm:text-sm lg:text-base text-[#8558ed]/80 font-medium flex items-center justify-center gap-2"
         >
-          <Flame className="w-5 h-5" />
+          <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
           Clear the board without hitting mines!
         </motion.p>
       </motion.div>
@@ -417,80 +441,80 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="flex items-center gap-4 mb-6 flex-wrap justify-center"
+        className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 justify-center w-full max-w-4xl px-2"
       >
         <motion.div
           whileHover={{ scale: 1.05, y: -2 }}
-          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="bg-gradient-to-tr from-[#8558ed] to-[#b18aff] w-10 h-10 rounded-full flex items-center justify-center"
+              className="bg-gradient-to-tr from-[#8558ed] to-[#b18aff] w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
             >
-              <Trophy className="w-5 h-5 text-white" />
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </motion.div>
             <div>
-              <div className="text-xs text-[#030303]/60 font-medium">Level</div>
-              <div className="text-2xl font-bold text-[#8558ed]">{level}</div>
+              <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Level</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-[#8558ed]">{level}</div>
             </div>
           </div>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.05, y: -2 }}
-          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="bg-gradient-to-tr from-green-500 to-emerald-500 w-10 h-10 rounded-full flex items-center justify-center"
+              className="bg-gradient-to-tr from-green-500 to-emerald-500 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
             >
-              <Star className="w-5 h-5 text-white" />
+              <Star className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </motion.div>
             <div>
-              <div className="text-xs text-[#030303]/60 font-medium">Completed</div>
-              <div className="text-2xl font-bold text-green-600">{puzzlesCompleted}</div>
+              <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Done</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">{puzzlesCompleted}</div>
             </div>
           </div>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.05, y: -2 }}
-          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.div
               animate={{ rotate: [0, -10, 10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="bg-gradient-to-tr from-red-500 to-rose-500 w-10 h-10 rounded-full flex items-center justify-center"
+              className="bg-gradient-to-tr from-red-500 to-rose-500 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
             >
-              <Bomb className="w-5 h-5 text-white" />
+              <Bomb className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </motion.div>
             <div>
-              <div className="text-xs text-[#030303]/60 font-medium">Errors</div>
-              <div className="text-2xl font-bold text-red-600">{errors}</div>
+              <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Errors</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-600">{errors}</div>
             </div>
           </div>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.05, y: -2 }}
-          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl px-6 py-3 shadow-lg shadow-[#8558ed]/10"
+          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 shadow-lg shadow-[#8558ed]/10"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="bg-gradient-to-tr from-yellow-500 to-orange-500 w-10 h-10 rounded-full flex items-center justify-center"
+              className="bg-gradient-to-tr from-yellow-500 to-orange-500 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
             >
-              <Zap className="w-5 h-5 text-white" />
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </motion.div>
             <div>
-              <div className="text-xs text-[#030303]/60 font-medium">Score</div>
-              <div className="text-2xl font-bold text-orange-600">{score}</div>
+              <div className="text-[10px] sm:text-xs text-[#030303]/60 font-medium">Score</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600">{score}</div>
             </div>
           </div>
         </motion.div>
@@ -501,13 +525,13 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.35 }}
-        className="mb-6 flex gap-4 justify-center flex-wrap"
+        className="mb-4 sm:mb-6 flex gap-2 sm:gap-3 lg:gap-4 justify-center flex-wrap px-2 max-w-4xl"
       >
         {(['veryFew', 'few', 'normal', 'many', 'full'] as MineMode[]).map((mode) => (
           <Button
             key={mode}
             variant={mineMode === mode ? 'default' : 'outline'}
-            className={`rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 ${mineMode === mode
+            className={`rounded-full px-3 sm:px-4 lg:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-all duration-200 ${mineMode === mode
               ? 'shadow-lg shadow-[#8558ed]/30 bg-gradient-to-r from-[#8558ed] to-[#b18aff] text-white'
               : 'border-[#8558ed]/40 text-[#8558ed] hover:bg-[#8558ed]/10'
               }`}
@@ -526,25 +550,25 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
             animate={{ scale: 1, rotate: 0 }}
             exit={{ scale: 0, rotate: 180 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="mb-4"
+            className="mb-3 sm:mb-4 px-2"
           >
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 0.6, repeat: Infinity }}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-2xl shadow-2xl shadow-green-500/30 flex items-center gap-3"
+              className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-2xl shadow-green-500/30 flex items-center gap-2 sm:gap-3"
             >
               <motion.span
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               >
-                <Sparkles className="w-8 h-8 text-[#8558ed]" />
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </motion.span>
-              <span className="text-2xl font-bold">Level Complete!</span>
+              <span className="text-lg sm:text-xl lg:text-2xl font-bold">Level Complete!</span>
               <motion.span
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               >
-                <CheckCircle2 className="w-8 h-8 text-green-500" />
+                <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </motion.span>
             </motion.div>
           </motion.div>
@@ -559,50 +583,50 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="mb-4"
+            className="mb-3 sm:mb-4 px-2"
           >
             <motion.div
               animate={{ x: [-5, 5, -5, 5, 0] }}
               transition={{ duration: 0.5 }}
-              className="bg-gradient-to-r from-red-500 to-rose-500 text-white px-8 py-4 rounded-2xl shadow-2xl shadow-red-500/30 flex items-center gap-3"
+              className="bg-gradient-to-r from-red-500 to-rose-500 text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-2xl shadow-red-500/30 flex items-center gap-2 sm:gap-3"
             >
               <motion.span
                 animate={{ rotate: [0, 20, -20, 0] }}
                 transition={{ duration: 0.5, repeat: 2 }}
               >
-                <AlertCircle className="w-8 h-8 text-red-500" />
+                <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </motion.span>
-              <span className="text-2xl font-bold">Mine Hit! Restarting...</span>
+              <span className="text-lg sm:text-xl lg:text-2xl font-bold">Mine Hit! Restarting...</span>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Game Board and Instructions Side by Side */}
-      <div className="flex items-start gap-8 justify-center">
+      <div className="flex flex-col lg:flex-row items-start gap-4 sm:gap-6 lg:gap-8 justify-center w-full max-w-6xl px-2">
         {/* Instructions - Left Side */}
         <motion.div
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="w-64"
+          className="w-full lg:w-64 order-2 lg:order-1"
         >
-          <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-2xl p-6 shadow-lg shadow-[#8558ed]/10 sticky top-8">
+          <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg shadow-[#8558ed]/10 lg:sticky lg:top-8">
             <div className="flex items-center justify-center gap-2 mb-3">
-              <Target className="w-5 h-5 text-[#8558ed]" />
-              <h3 className="text-lg font-bold text-[#8558ed]">How to Play</h3>
+              <Target className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed]" />
+              <h3 className="text-base sm:text-lg font-bold text-[#8558ed]">How to Play</h3>
             </div>
-            <div className="space-y-2 text-sm text-[#030303]/70">
+            <div className="space-y-2 text-xs sm:text-sm text-[#030303]/70">
               <p className="flex items-center gap-2">
-                <MousePointer className="w-5 h-5 text-[#8558ed]" />
+                <MousePointer className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed] flex-shrink-0" />
                 <span><strong>Left-click</strong> to reveal cells</span>
               </p>
               <p className="flex items-center gap-2">
-                <Flag className="w-5 h-5 text-[#8558ed]" />
+                <Flag className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed] flex-shrink-0" />
                 <span><strong>Right-click</strong> to flag mines</span>
               </p>
               <p className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-[#8558ed]" />
+                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed] flex-shrink-0" />
                 <span>Clear all safe cells to win!</span>
               </p>
             </div>
@@ -614,10 +638,10 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-2xl shadow-[#8558ed]/20"
+          className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-6 shadow-2xl shadow-[#8558ed]/20 order-1 lg:order-2 w-full lg:w-auto flex justify-center overflow-x-auto"
         >
           <div
-            className="inline-grid gap-1.5"
+            className="inline-grid gap-1 sm:gap-1.5"
             style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}
           >
             {grid.map((row, rowIndex) =>
@@ -634,7 +658,8 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
                   }}
                   whileHover={{ scale: cell.isRevealed ? 1 : 1.1, y: cell.isRevealed ? 0 : -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`w-10 h-10 flex items-center justify-center text-sm font-bold rounded-lg transition-all duration-200 ${getCellColor(cell)} ${!cell.isRevealed ? 'shadow-md hover:shadow-lg' : ''
+                  style={{ width: cellSize, height: cellSize }}
+                  className={`flex items-center justify-center text-xs sm:text-sm font-bold rounded-md sm:rounded-lg transition-all duration-200 ${getCellColor(cell)} ${!cell.isRevealed ? 'shadow-md hover:shadow-lg' : ''
                     }`}
                   onClick={() => revealCell(rowIndex, colIndex)}
                   onContextMenu={(e) => toggleFlag(rowIndex, colIndex, e)}

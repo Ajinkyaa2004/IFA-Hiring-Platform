@@ -37,6 +37,7 @@ export interface GameScore {
   timeSpent: number; // in seconds
   errorRate?: number;
   minimumMoves?: number;
+  maxScore?: number; // For question game to store max possible score
   completedAt: string;
   trialCompleted: boolean;
   failed?: boolean;

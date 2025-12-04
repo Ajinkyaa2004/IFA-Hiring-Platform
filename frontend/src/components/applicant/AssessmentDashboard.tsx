@@ -417,37 +417,37 @@ export const AssessmentDashboard: React.FC = () => {
       {/* Confetti animation */}
       {showConfetti && <Confetti />}
 
-      <div className="max-w-6xl mx-auto py-8 relative z-10">
+      <div className="max-w-6xl mx-auto py-4 sm:py-8 relative z-10">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex justify-between items-center mb-6"
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3"
         >
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-game-purple-700 via-game-purple-500 to-game-purple-400 bg-clip-text text-transparent drop-shadow-lg">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-game-purple-700 via-game-purple-500 to-game-purple-400 bg-clip-text text-transparent drop-shadow-lg">
               IFA SkillQuest Assessment
             </h1>
             <motion.p
-              className="text-gray-600 mt-2 flex items-center gap-2"
+              className="text-sm sm:text-base text-gray-600 mt-2 flex flex-wrap items-center gap-1 sm:gap-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              Welcome, <span className="font-semibold">{profile.name}</span> | Candidate ID: <span className="font-mono font-semibold text-game-purple-600">{profile.candidateId}</span>
+              Welcome, <span className="font-semibold">{profile.name}</span> <span className="hidden sm:inline">|</span> <br className="sm:hidden" /> Candidate ID: <span className="font-mono font-semibold text-game-purple-600 text-xs sm:text-sm">{profile.candidateId}</span>
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="text-orange-600 font-semibold mt-1 flex items-center gap-2"
+              className="text-sm sm:text-base text-orange-600 font-semibold mt-1 flex items-center gap-2"
             >
-              <motivationalMessage.Icon className="w-4 h-4" />
+              <motivationalMessage.Icon className="w-3 h-3 sm:w-4 sm:h-4" />
               {motivationalMessage.text}
             </motion.p>
           </div>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button variant="outline" onClick={logout} className="border-2 border-game-purple-500/30 text-game-purple-700 hover:bg-game-purple-50">
+            <Button variant="outline" onClick={logout} className="border-2 border-game-purple-500/30 text-game-purple-700 hover:bg-game-purple-50 text-sm w-full sm:w-auto">
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </Button>
@@ -463,23 +463,23 @@ export const AssessmentDashboard: React.FC = () => {
             className="mb-6"
           >
             <Card className="bg-gradient-to-r from-game-purple-500/10 to-game-purple-400/10 border-2 border-game-purple-500/20">
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+              <CardContent className="py-3 sm:py-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                      className="w-10 h-10 rounded-full bg-gradient-to-br from-game-purple-700 to-game-purple-400 flex items-center justify-center"
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-game-purple-700 to-game-purple-400 flex items-center justify-center flex-shrink-0"
                     >
-                      <Clock className="w-5 h-5 text-white" />
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </motion.div>
                     <div>
-                      <p className="text-sm font-semibold text-game-purple-700">Estimated Time Remaining</p>
-                      <p className="text-xs text-gray-600">Complete all games to finish your assessment</p>
+                      <p className="text-xs sm:text-sm font-semibold text-game-purple-700">Estimated Time Remaining</p>
+                      <p className="text-xs text-gray-600 hidden sm:block">Complete all games to finish your assessment</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-3xl font-bold bg-gradient-to-r from-game-purple-700 to-game-purple-400 bg-clip-text text-transparent">
+                  <div className="text-left sm:text-right w-full sm:w-auto">
+                    <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-game-purple-700 to-game-purple-400 bg-clip-text text-transparent">
                       ~{estimatedTimeRemaining}
                     </p>
                     <p className="text-xs text-gray-600">minutes</p>
@@ -605,7 +605,7 @@ export const AssessmentDashboard: React.FC = () => {
           )}
         </AnimatePresence>
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8"
           initial="hidden"
           animate="visible"
           variants={{
@@ -689,10 +689,10 @@ export const AssessmentDashboard: React.FC = () => {
                         <div className="flex items-center justify-between">
                           <motion.div
                             whileHover={{ scale: 1.1, rotate: 5 }}
-                            className={`w-16 h-16 rounded-full bg-gradient-to-br ${game.color} flex items-center justify-center shadow-lg relative`}
+                            className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br ${game.color} flex items-center justify-center shadow-lg relative`}
                           >
                             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-game-purple-700 to-game-purple-400 animate-ping opacity-20" />
-                            <GameIcon className="w-8 h-8 text-white relative z-10" />
+                            <GameIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white relative z-10" />
                           </motion.div>
                           {!unlocked && game.available && (
                             <motion.div
@@ -721,18 +721,18 @@ export const AssessmentDashboard: React.FC = () => {
                             </motion.div>
                           )}
                         </div>
-                        <CardTitle className="text-xl mt-3">{game.title}</CardTitle>
-                        <CardDescription>{game.description}</CardDescription>
+                        <CardTitle className="text-lg sm:text-xl mt-3">{game.title}</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">{game.description}</CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-3">
+                      <CardContent className="space-y-2 sm:space-y-3">
                         {/* Game Instructions */}
                         {game.available && (
-                          <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
-                            <div className="text-xs font-bold text-blue-800 mb-1.5 flex items-center gap-1">
+                          <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                            <div className="text-xs font-bold text-blue-800 mb-1 sm:mb-1.5 flex items-center gap-1">
                               <Sparkles className="w-3 h-3" />
                               How to Play:
                             </div>
-                            <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
+                            <ul className="text-[10px] sm:text-xs text-blue-700 space-y-0.5 sm:space-y-1 list-disc list-inside">
                               {game.type === 'minesweeper' && (
                                 <>
                                   <li>Click to reveal safe cells, right-click to flag mines</li>
@@ -766,10 +766,10 @@ export const AssessmentDashboard: React.FC = () => {
                           </div>
                         )}
 
-                        <div className="text-sm">
+                        <div className="text-xs sm:text-sm">
                           <strong>Skill Tested:</strong> {game.skill}
                         </div>
-                        <div className="text-sm">
+                        <div className="text-xs sm:text-sm">
                           <strong>Duration:</strong> 5 minutes
                         </div>
 
@@ -778,19 +778,19 @@ export const AssessmentDashboard: React.FC = () => {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                            className={`p-3 rounded-md border ${score.failed
+                            className={`p-2 sm:p-3 rounded-md border ${score.failed
                               ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-300'
                               : 'bg-gradient-to-r from-game-purple-500/5 to-game-purple-400/5 border-game-purple-500/20'
                               }`}
                           >
                             {score.failed ? (
                               <>
-                                <div className="text-sm font-bold text-red-600 flex items-center gap-2">
-                                  <XCircle className="w-4 h-4" />
+                                <div className="text-xs sm:text-sm font-bold text-red-600 flex items-center gap-2">
+                                  <XCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                   Failed
                                 </div>
                                 {score.failureReason && (
-                                  <div className="text-xs text-red-700 mt-1">
+                                  <div className="text-[10px] sm:text-xs text-red-700 mt-1">
                                     {score.failureReason}
                                   </div>
                                 )}
@@ -817,10 +817,10 @@ export const AssessmentDashboard: React.FC = () => {
                               </>
                             ) : (
                               <>
-                                <div className="text-sm font-semibold text-game-purple-700">
+                                <div className="text-xs sm:text-sm font-semibold text-game-purple-700">
                                   Score: <AnimatedCounter value={score.puzzlesCompleted} duration={1.5} /> puzzles completed
                                 </div>
-                                <div className="text-xs text-game-purple-600">
+                                <div className="text-[10px] sm:text-xs text-game-purple-600">
                                   Time: {Math.floor(score.timeSpent / 60)}:{(score.timeSpent % 60).toString().padStart(2, '0')}
                                 </div>
                               </>
@@ -833,7 +833,7 @@ export const AssessmentDashboard: React.FC = () => {
                             <Button
                               onClick={() => startGame(game.type, false)}
                               disabled={!unlocked || completed || !game.available}
-                              className={`w-full ${completed
+                              className={`w-full text-xs sm:text-sm ${completed
                                 ? 'bg-game-purple-500/10 text-game-purple-700 border-game-purple-500/30'
                                 : !unlocked || !game.available
                                   ? 'bg-gray-100 text-gray-400 border-gray-300'
@@ -842,22 +842,22 @@ export const AssessmentDashboard: React.FC = () => {
                             >
                               {!game.available ? (
                                 <>
-                                  <Clock className="w-4 h-4 mr-2" />
+                                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                                   Coming Soon
                                 </>
                               ) : completed ? (
                                 <>
-                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                                   Completed
                                 </>
                               ) : !unlocked ? (
                                 <>
-                                  <Lock className="w-4 h-4 mr-2" />
+                                  <Lock className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                                   Locked
                                 </>
                               ) : (
                                 <>
-                                  <Play className="w-4 h-4 mr-2" />
+                                  <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                                   Start Assessment
                                 </>
                               )}
@@ -869,21 +869,21 @@ export const AssessmentDashboard: React.FC = () => {
                               onClick={() => startGame(game.type, true)}
                               disabled={!trialUnlocked || !game.available}
                               variant="outline"
-                              className="w-full"
+                              className="w-full text-xs sm:text-sm"
                             >
                               {!game.available ? (
                                 <>
-                                  <Clock className="w-4 h-4 mr-2" />
+                                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                                   Coming Soon
                                 </>
                               ) : !trialUnlocked ? (
                                 <>
-                                  <Lock className="w-4 h-4 mr-2" />
+                                  <Lock className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                                   Trial Locked
                                 </>
                               ) : (
                                 <>
-                                  <Play className="w-4 h-4 mr-2" />
+                                  <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                                   Try Practice Mode
                                 </>
                               )}
@@ -905,12 +905,12 @@ export const AssessmentDashboard: React.FC = () => {
         >
           <Card className="bg-white/80 backdrop-blur-sm border-2 border-game-purple-500/20 shadow-lg shadow-game-purple-500/10">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-game-purple-600" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-game-purple-600" />
                 Assessment Rules
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
               <p>• Each game runs for exactly <strong>5 minutes</strong>.</p>
               <p>• Games are unlocked sequentially - complete one to unlock the next.</p>
               <p>• Trial mode is available after completing the scored version of the previous game.</p>
