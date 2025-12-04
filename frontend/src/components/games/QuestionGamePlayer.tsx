@@ -7,6 +7,7 @@ import { CheckCircle2, XCircle, FileText, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BACKEND_URL = API_BASE_URL.replace('/api', '');
 
 interface Question {
     _id: string;
@@ -201,7 +202,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                 className="w-full h-32 sm:h-48 md:h-56 rounded-xl overflow-hidden shadow-lg"
                             >
                                 <img
-                                    src={`http://localhost:5000${coverImage}`}
+                                    src={`${BACKEND_URL}${coverImage}`}
                                     alt="Quiz Cover"
                                     className="w-full h-full object-cover"
                                 />
@@ -301,7 +302,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                     {q.imageUrl && (
                                                         <div className="rounded-lg overflow-hidden bg-gray-50 p-2">
                                                             <img 
-                                                                src={`http://localhost:5000${q.imageUrl}`} 
+                                                                src={`${BACKEND_URL}${q.imageUrl}`} 
                                                                 alt="Question" 
                                                                 className="max-h-48 sm:max-h-64 w-full object-contain rounded" 
                                                             />
@@ -348,7 +349,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                                     {opt.imageUrl && (
                                                                         <div className="mt-2 rounded overflow-hidden bg-gray-50 p-1">
                                                                             <img 
-                                                                                src={`http://localhost:5000${opt.imageUrl}`} 
+                                                                                src={`${BACKEND_URL}${opt.imageUrl}`} 
                                                                                 alt={`Option ${String.fromCharCode(65 + idx)}`} 
                                                                                 className="max-h-24 sm:max-h-32 w-full object-contain rounded"
                                                                             />
