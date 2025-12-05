@@ -818,6 +818,79 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
     setTempPosition(null);
   };
 
+  // Touch event handlers for mobile support
+  const handleTouchStart = (id: number, e: React.TouchEvent) => {
+    if (levelComplete || allLevelsComplete) return;
+
+    const block = blocks.find((b) => b.id === id);
+    if (!block) return;
+
+    const touch = e.touches[0];
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDraggedBlock(id);
+    setDragOffset({
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
+    });
+    setTempPosition({ row: block.row, col: block.col });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (draggedBlock === null || !gridRef.current) return;
+
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+
+    rafRef.current = requestAnimationFrame(() => {
+      const block = blocks.find((b) => b.id === draggedBlock);
+      if (!block) return;
+
+      const touch = e.touches[0];
+      const gridRect = gridRef.current!.getBoundingClientRect();
+      const x = touch.clientX - gridRect.left - dragOffset.x;
+      const y = touch.clientY - gridRect.top - dragOffset.y;
+
+      let newRow = block.row;
+      let newCol = block.col;
+
+      if (block.isHorizontal) {
+        newCol = Math.round(x / CELL_SIZE);
+        newCol = Math.max(0, Math.min(GRID_SIZE - block.length, newCol));
+      } else {
+        newRow = Math.round(y / CELL_SIZE);
+        newRow = Math.max(0, Math.min(GRID_SIZE - block.length, newRow));
+      }
+
+      if (canMoveBlock(block, newRow, newCol)) {
+        setTempPosition({ row: newRow, col: newCol });
+      }
+    });
+  };
+
+  const handleTouchEnd = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+
+    if (draggedBlock === null || tempPosition === null) return;
+
+    const block = blocks.find((b) => b.id === draggedBlock);
+    if (!block) return;
+
+    if (block.row !== tempPosition.row || block.col !== tempPosition.col) {
+      const newBlocks = blocks.map((b) =>
+        b.id === draggedBlock ? { ...b, row: tempPosition.row, col: tempPosition.col } : b
+      );
+      setBlocks(newBlocks);
+      setMoves((m) => m + 1);
+      setTotalMoves((t) => t + 1);
+      checkWin(newBlocks);
+    }
+
+    setDraggedBlock(null);
+    setTempPosition(null);
+  };
+
   const getBlockPosition = (b: Block) => {
     if (draggedBlock === b.id && tempPosition) {
       return {
@@ -1154,6 +1227,8 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               >
                 {/* Grid cells */}
                 <div
@@ -1178,6 +1253,7 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
                     <motion.div
                       key={block.id}
                       onMouseDown={(e) => handleMouseDown(block.id, e)}
+                      onTouchStart={(e) => handleTouchStart(block.id, e)}
                       whileHover={{ scale: isDragging ? 1 : 1.02 }}
                       className={`absolute rounded-lg sm:rounded-xl shadow-lg cursor-grab active:cursor-grabbing select-none ${getBlockColor(
                         block
