@@ -241,9 +241,9 @@ export const AssessmentDashboard: React.FC = () => {
     }
     if (gameType === 'question-game') {
       // Question Game unlocks only after all three games are completed
-      return assessment.games['unblock-me'] !== null && 
-             assessment.games.minesweeper !== null && 
-             assessment.games['water-capacity'] !== null;
+      return assessment.games['unblock-me'] !== null &&
+        assessment.games.minesweeper !== null &&
+        assessment.games['water-capacity'] !== null;
     }
     return false;
   };
@@ -260,9 +260,9 @@ export const AssessmentDashboard: React.FC = () => {
     }
     if (gameType === 'question-game') {
       // Question Game trial unlocks only after all three games are completed
-      return assessment.games['unblock-me'] !== null && 
-             assessment.games.minesweeper !== null && 
-             assessment.games['water-capacity'] !== null;
+      return assessment.games['unblock-me'] !== null &&
+        assessment.games.minesweeper !== null &&
+        assessment.games['water-capacity'] !== null;
     }
     return false;
   };
@@ -914,8 +914,8 @@ export const AssessmentDashboard: React.FC = () => {
               <p>• Each game runs for exactly <strong>5 minutes</strong>.</p>
               <p>• Games are unlocked sequentially - complete one to unlock the next.</p>
               <p>• Trial mode is available after completing the scored version of the previous game.</p>
-              <p>• The assessment must be completed in <strong>full-screen mode</strong>.</p>
-              <p>• Tab switching during assessment may result in disqualification.</p>
+              <p>• The assessment must be completed in <strong>full-screen mode</strong> (desktop only).</p>
+              <p>• Tab switching during assessment may result in disqualification (all devices).</p>
               <p>• Your score is based on the number of puzzles/levels completed within the time limit.</p>
             </CardContent>
           </Card>

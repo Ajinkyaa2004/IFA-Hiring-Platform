@@ -668,12 +668,12 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
     const optimal = level.optimalMoves;
     let score = 5; // Base score for completing the level
 
-    // Deduct 1 point for every extra move
-    if (moves > optimal) {
-      score -= (moves - optimal);
-    }
+    // Deduct 1 point for every extra move over optimal
+    const extraMoves = Math.max(0, moves - optimal);
+    score -= extraMoves;
 
-    return score;
+    // Minimum score of 1 point for completing a level
+    return Math.max(score, 1);
   };
 
   const calculateTotalScore = () => {

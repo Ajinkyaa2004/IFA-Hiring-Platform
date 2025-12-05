@@ -171,20 +171,20 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     // Base score per level
     const baseScore = 150;
 
-    // Grid multiplier: larger grids = higher reward
-    const gridMultiplier = currentGridSize / 8;
+    // Grid bonus: larger grids = more points (scaled)
+    const gridBonus = (currentGridSize - 8) * 20; // +20 per size above base 8x8
 
-    // Speed bonus: faster completion = more points
+    // Speed bonus: faster completion = more points (max 100 points)
     const speedBonus = Math.max(100 - timeSpent, 0);
 
-    // Accuracy bonus: no errors in this level
+    // Accuracy bonus: 100 points for 0 errors
     const accuracyBonus = levelErr === 0 ? 100 : 0;
 
-    // Level milestone bonus
-    const milestoneBonus = currentLevel % 5 === 0 ? 100 : 0;
+    // Error penalty: -30 points per error (hitting a mine)
+    const errorPenalty = levelErr * 30;
 
-    const levelScore = (baseScore * gridMultiplier) + speedBonus + accuracyBonus + milestoneBonus;
-    return Math.round(levelScore);
+    const levelScore = baseScore + gridBonus + speedBonus + accuracyBonus - errorPenalty;
+    return Math.max(Math.round(levelScore), 20); // Minimum 20 points per level
   }, []);
 
   const calculateTotalScore = useCallback(() => {

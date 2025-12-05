@@ -17,6 +17,12 @@ import { motion } from 'framer-motion';
 
 const GAME_DURATION = 300; // 5 minutes in seconds
 
+// Utility function to detect mobile devices
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    (window.innerWidth <= 768);
+};
+
 export const GameWrapper: React.FC = () => {
   const { gameType, quizId } = useParams<{ gameType: GameType; quizId: string }>();
   const [searchParams] = useSearchParams();
@@ -32,6 +38,7 @@ export const GameWrapper: React.FC = () => {
   const [_isDisqualified, setIsDisqualified] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isGamePaused, setIsGamePaused] = useState(false);
+  const [isMobile] = useState(isMobileDevice());
 
   // ✅ UPDATED: Now async with MongoDB
   useEffect(() => {
@@ -73,8 +80,8 @@ export const GameWrapper: React.FC = () => {
           navigate('/applicant/assessment');
           return;
         }
-        if (gameType === 'question-game' && 
-            (!assessment.games['unblock-me'] || !assessment.games.minesweeper || !assessment.games['water-capacity'])) {
+        if (gameType === 'question-game' &&
+          (!assessment.games['unblock-me'] || !assessment.games.minesweeper || !assessment.games['water-capacity'])) {
           toast.warning('Please complete Unblock Me, Minesweeper, and Water Capacity first to unlock Question Game.', {
             duration: 4000,
             icon: '🔒',
@@ -87,7 +94,7 @@ export const GameWrapper: React.FC = () => {
         // Game is only completed if it has actual timeSpent data (was actually played)
         const gameData = assessment.games[gameType];
         const isActuallyCompleted = gameData && gameData.timeSpent !== undefined && gameData.timeSpent !== null;
-        
+
         if (!isTrial && isActuallyCompleted) {
           toast.info('You have already completed this game.', {
             duration: 3000,
@@ -128,9 +135,9 @@ export const GameWrapper: React.FC = () => {
     return () => clearInterval(interval);
   }, [gameStarted, isTrial, isGamePaused]);
 
-  // Fullscreen monitoring
+  // Fullscreen monitoring (skip for mobile devices)
   useEffect(() => {
-    if (!gameStarted || isTrial) return;
+    if (!gameStarted || isTrial || isMobile) return;
 
     const handleFullscreenChange = () => {
       const inFullscreen = !!document.fullscreenElement;
@@ -153,9 +160,10 @@ export const GameWrapper: React.FC = () => {
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, [gameStarted, isTrial, isGamePaused]);
+  }, [gameStarted, isTrial, isGamePaused, isMobile]);
 
-  // Tab switching detection
+  // Tab switching detection (works on BOTH mobile and desktop)
+  // User gets 2 warnings, then disqualified on 3rd tab switch
   useEffect(() => {
     if (!gameStarted || isTrial) return;
 
@@ -188,6 +196,17 @@ export const GameWrapper: React.FC = () => {
   }, [gameStarted, navigate, isTrial]);
 
   const enterFullscreen = async () => {
+    // On mobile devices, skip fullscreen and start game directly
+    if (isMobile) {
+      setGameStarted(true);
+      toast.success('Game started! Good luck!', {
+        duration: 2000,
+        icon: '🚀',
+      });
+      return;
+    }
+
+    // On desktop, require fullscreen
     try {
       await document.documentElement.requestFullscreen();
       setIsFullscreen(true);
@@ -205,6 +224,12 @@ export const GameWrapper: React.FC = () => {
   };
 
   const resumeFullscreen = async () => {
+    // Skip on mobile
+    if (isMobile) {
+      setIsGamePaused(false);
+      return;
+    }
+
     try {
       await document.documentElement.requestFullscreen();
       setIsFullscreen(true);
@@ -291,7 +316,7 @@ export const GameWrapper: React.FC = () => {
       await saveAssessment(assessment);
 
       exitFullscreen();
-      
+
       // For question game, don't navigate here - let the game component handle it
       if (gameType !== 'question-game') {
         navigate('/applicant/assessment');
@@ -486,7 +511,11 @@ export const GameWrapper: React.FC = () => {
                         className="flex items-start gap-2 sm:gap-3 text-sm sm:text-base text-gray-700"
                       >
                         <Maximize className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                        <span>You must play in <strong className="text-purple-600">fullscreen mode</strong></span>
+                        {isMobile ? (
+                          <span>Play in <strong className="text-purple-600">portrait or landscape mode</strong> for best experience</span>
+                        ) : (
+                          <span>You must play in <strong className="text-purple-600">fullscreen mode</strong></span>
+                        )}
                       </motion.li>
                       <motion.li
                         initial={{ x: -20, opacity: 0 }}
@@ -670,8 +699,14 @@ export const GameWrapper: React.FC = () => {
                     className="w-full h-12 sm:h-14 text-sm sm:text-base lg:text-lg font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 hover:from-purple-700 hover:via-blue-700 hover:to-cyan-700 text-white shadow-lg"
                   >
                     <Maximize className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    <span className="hidden sm:inline">Enter Fullscreen & Start</span>
-                    <span className="sm:hidden">Start Game</span>
+                    {isMobile ? (
+                      <span>Start Game</span>
+                    ) : (
+                      <>
+                        <span className="hidden sm:inline">Enter Fullscreen & Start</span>
+                        <span className="sm:hidden">Start Game</span>
+                      </>
+                    )}
                   </Button>
                 </motion.div>
                 <motion.div

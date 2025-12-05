@@ -218,21 +218,21 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
     // Base score per puzzle
     const baseScore = 120;
 
-    // Complexity factor: more jugs = higher reward
-    const complexityFactor = 1.0 + (numberOfJugs - 2) * 0.25;
+    // Complexity bonus: more jugs = higher multiplier
+    const complexityBonus = (numberOfJugs - 2) * 30; // +30 points per jug above 2
 
-    // Estimate optimal steps (rough heuristic: more jugs and larger capacities = more steps)
+    // Estimate optimal steps (heuristic based on jugs and capacities)
     const avgCapacity = puzzle.jugs.reduce((sum, j) => sum + j.capacity, 0) / numberOfJugs;
     const optimalSteps = Math.ceil(numberOfJugs * 2 + Math.log2(avgCapacity));
 
-    // Efficiency bonus if steps are within reasonable range
-    const efficiencyBonus = stepsUsed <= (optimalSteps + 3) ? 60 : 0;
+    // Efficiency bonus: 60 points for solving within optimal steps
+    const efficiencyBonus = stepsUsed <= optimalSteps ? 60 : 0;
 
-    // Step penalty for excessive moves
-    const excessSteps = Math.max(0, stepsUsed - (optimalSteps + 3));
+    // Penalty: -8 points per extra step beyond optimal
+    const excessSteps = Math.max(0, stepsUsed - optimalSteps);
     const stepPenalty = excessSteps * 8;
 
-    const puzzleScore = (baseScore * complexityFactor) + efficiencyBonus - stepPenalty;
+    const puzzleScore = baseScore + complexityBonus + efficiencyBonus - stepPenalty;
     return Math.max(Math.round(puzzleScore), 20); // Minimum 20 points per puzzle
   }, [puzzles]);
 
