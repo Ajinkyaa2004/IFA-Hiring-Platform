@@ -209,16 +209,23 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
   }, [currentPuzzle, initializePuzzle]);
 
   // Scoring calculation functions
-  const calculatePuzzleScore = useCallback((_puzzleIndex: number, _stepsUsed: number) => {
-    // Award exactly 5 points for every level completed
-    // No bonuses, no penalties - simple scoring
-    return 5;
-  }, []);
+  const calculatePuzzleScore = useCallback((puzzleIndex: number, _stepsUsed: number) => {
+    // Get the puzzle from the active shuffled array to ensure we score the correct puzzle
+    if (!puzzles || puzzles.length === 0) return 0;
+    const puzzle = puzzles[puzzleIndex % puzzles.length];
+
+    // Hard level (> 2 jugs) = 4 points
+    // Normal level (<= 2 jugs) = 2 points
+    if (puzzle.jugs.length > 2) {
+      return 4;
+    }
+    return 2;
+  }, [puzzles]);
 
   const calculateTotalScore = useCallback(() => {
-    // Total score = levelsCompleted × 5
-    return puzzlesCompleted * 5;
-  }, [puzzlesCompleted]);
+    // Sum up all the scores stored in puzzleScores
+    return puzzleScores.reduce((sum, s) => sum + s, 0);
+  }, [puzzleScores]);
 
   useEffect(() => {
     if (timeRemaining === 0 && !isTrialMode) {
@@ -228,7 +235,7 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
   }, [timeRemaining, totalSteps, onComplete, isTrialMode, calculateTotalScore]);
 
   useEffect(() => {
-    if (!activePuzzle) {
+    if (!activePuzzle || showSuccess) {
       return;
     }
 
@@ -251,7 +258,7 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
         setShowSuccess(false);
       }, 1500);
     }
-  }, [jugs, activePuzzle, currentPuzzle, steps, puzzleSteps, puzzleScores, calculatePuzzleScore]);
+  }, [jugs, activePuzzle, currentPuzzle, steps, puzzleSteps, puzzleScores, calculatePuzzleScore, showSuccess]);
 
   const fillJug = (jugId: number) => {
     const newJugs = jugs.map(jug =>

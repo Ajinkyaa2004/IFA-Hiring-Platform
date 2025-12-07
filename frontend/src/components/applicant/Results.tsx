@@ -301,7 +301,7 @@ export const Results: React.FC = () => {
                 >
                   {assessment.totalScore}
                 </motion.div>
-                <div className="text-xl font-semibold text-gray-600">/ 100 points</div>
+                <div className="text-xl font-semibold text-gray-600">Points</div>
               </div>
               <div className="mt-3 flex items-center gap-2">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-full border border-purple-200">
