@@ -25,7 +25,7 @@ interface Correction {
 
 interface QuestionGamePlayerProps {
     uploadId?: string;
-    onComplete?: (score: number, maxScore: number) => void;
+    onComplete?: (score: number, maxScore: number) => void | Promise<void>;
 }
 
 export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: QuestionGamePlayerProps = {}) {
@@ -136,12 +136,14 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
             setIsSubmitted(true);
             toast.success('Quiz Submitted!');
 
-            // Navigate to results page after a brief delay
-            setTimeout(() => {
+            // Call onComplete to save the score through GameWrapper
+            setTimeout(async () => {
                 if (onComplete) {
-                    onComplete(result.score.score, result.score.maxScore);
+                    await onComplete(result.score.score, result.score.maxScore);
                 }
-                navigate('/applicant/results');
+                // Navigate to assessment dashboard, not results
+                // GameWrapper will handle saving the score
+                navigate('/applicant/assessment');
             }, 1000);
 
         } catch (error) {
@@ -177,7 +179,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
             </div>
         );
     }
-    
+
     if (questions.length === 0) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 flex justify-center items-center">
@@ -316,8 +318,8 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                             {score} <span className="text-lg sm:text-xl lg:text-2xl text-white/70">/ {maxScore}</span>
                                         </p>
                                         <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
-                                            <Button 
-                                                variant="secondary" 
+                                            <Button
+                                                variant="secondary"
                                                 className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
                                                 onClick={() => {
                                                     const firstQuestion = document.getElementById('question-0');
@@ -328,14 +330,13 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                             >
                                                 Review Answers
                                             </Button>
-                                            <Button 
+                                            <Button
                                                 className="bg-white text-purple-600 hover:bg-white/90"
-                                                onClick={() => {
+                                                onClick={async () => {
                                                     if (onComplete) {
-                                                        onComplete(score, maxScore);
-                                                    } else {
-                                                        navigate(-1);
+                                                        await onComplete(score, maxScore);
                                                     }
+                                                    navigate('/applicant/assessment');
                                                 }}
                                             >
                                                 Finish & Save
@@ -361,27 +362,25 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                 >
                                     <Card
                                         id={`question-${index}`}
-                                        className={`transition-all border ${
-                                            isSubmitted 
-                                                ? isCorrect 
-                                                    ? 'border-green-400 bg-green-50' 
-                                                    : 'border-red-400 bg-red-50'
-                                                : isAnswered
-                                                    ? 'border-game-teal-400 bg-white shadow-sm'
-                                                    : 'border-gray-200 bg-white hover:border-gray-300'
-                                        }`}
+                                        className={`transition-all border ${isSubmitted
+                                            ? isCorrect
+                                                ? 'border-green-400 bg-green-50'
+                                                : 'border-red-400 bg-red-50'
+                                            : isAnswered
+                                                ? 'border-game-teal-400 bg-white shadow-sm'
+                                                : 'border-gray-200 bg-white hover:border-gray-300'
+                                            }`}
                                     >
                                         <CardHeader className="pb-1.5 sm:pb-2 pt-3 sm:pt-4 px-3 sm:px-6">
                                             <div className="flex items-start gap-1.5 sm:gap-2">
-                                                <div className={`flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 rounded-full shrink-0 font-bold text-[10px] sm:text-xs lg:text-sm ${
-                                                    isSubmitted
-                                                        ? isCorrect
-                                                            ? 'bg-green-500 text-white'
-                                                            : 'bg-red-500 text-white'
-                                                        : isAnswered
-                                                            ? 'bg-game-teal-500 text-white'
-                                                            : 'bg-gray-100 text-gray-600'
-                                                }`}>
+                                                <div className={`flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 rounded-full shrink-0 font-bold text-[10px] sm:text-xs lg:text-sm ${isSubmitted
+                                                    ? isCorrect
+                                                        ? 'bg-green-500 text-white'
+                                                        : 'bg-red-500 text-white'
+                                                    : isAnswered
+                                                        ? 'bg-game-teal-500 text-white'
+                                                        : 'bg-gray-100 text-gray-600'
+                                                    }`}>
                                                     {index + 1}
                                                 </div>
                                                 <div className="flex-1 space-y-1.5 sm:space-y-2">
@@ -392,11 +391,10 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                         {!isSubmitted && (
                                                             <button
                                                                 onClick={() => toggleBookmark(q._id)}
-                                                                className={`p-1 sm:p-1.5 rounded-md transition-all ${
-                                                                    bookmarkedQuestions.has(q._id)
-                                                                        ? 'bg-game-orange-100 text-game-orange-600 hover:bg-game-orange-200'
-                                                                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
-                                                                }`}
+                                                                className={`p-1 sm:p-1.5 rounded-md transition-all ${bookmarkedQuestions.has(q._id)
+                                                                    ? 'bg-game-orange-100 text-game-orange-600 hover:bg-game-orange-200'
+                                                                    : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                                                                    }`}
                                                                 title={bookmarkedQuestions.has(q._id) ? 'Remove flag' : 'Flag for review'}
                                                             >
                                                                 <Flag className="w-3 h-3 sm:w-4 sm:h-4" fill={bookmarkedQuestions.has(q._id) ? 'currentColor' : 'none'} />
@@ -405,10 +403,10 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                     </div>
                                                     {q.imageUrl && (
                                                         <div className="rounded overflow-hidden bg-gray-50 p-0.5 sm:p-1">
-                                                            <img 
-                                                                src={q.imageUrl?.startsWith('data:') ? q.imageUrl : `${BACKEND_URL}${q.imageUrl}`} 
-                                                                alt="Question" 
-                                                                className="max-h-24 sm:max-h-32 lg:max-h-40 w-full object-contain rounded" 
+                                                            <img
+                                                                src={q.imageUrl?.startsWith('data:') ? q.imageUrl : `${BACKEND_URL}${q.imageUrl}`}
+                                                                alt="Question"
+                                                                className="max-h-24 sm:max-h-32 lg:max-h-40 w-full object-contain rounded"
                                                                 onError={(e) => {
                                                                     console.error('Failed to load question image:', q.imageUrl?.substring(0, 50));
                                                                     e.currentTarget.style.display = 'none';
@@ -435,8 +433,8 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                         optionClass += "opacity-40 border-gray-200 ";
                                                     }
                                                 } else {
-                                                    optionClass += isSelected 
-                                                        ? "bg-game-teal-50 border-game-teal-400 text-game-teal-900 " 
+                                                    optionClass += isSelected
+                                                        ? "bg-game-teal-50 border-game-teal-400 text-game-teal-900 "
                                                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 ";
                                                 }
 
@@ -456,9 +454,9 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                                     {opt.text && <span className="block break-words">{opt.text}</span>}
                                                                     {opt.imageUrl && (
                                                                         <div className="mt-1.5 rounded overflow-hidden bg-gray-50 p-1">
-                                                                            <img 
-                                                                                src={opt.imageUrl?.startsWith('data:') ? opt.imageUrl : `${BACKEND_URL}${opt.imageUrl}`} 
-                                                                                alt={`Option ${String.fromCharCode(65 + idx)}`} 
+                                                                            <img
+                                                                                src={opt.imageUrl?.startsWith('data:') ? opt.imageUrl : `${BACKEND_URL}${opt.imageUrl}`}
+                                                                                alt={`Option ${String.fromCharCode(65 + idx)}`}
                                                                                 className="max-h-20 sm:max-h-24 w-full object-contain rounded"
                                                                                 onError={(e) => {
                                                                                     console.error('Failed to load option image:', opt.imageUrl?.substring(0, 50));
@@ -502,9 +500,9 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                 animate={{ opacity: 1 }}
                                 className="flex justify-center pt-4 pb-6"
                             >
-                                <Button 
-                                    size="default" 
-                                    onClick={handleSubmit} 
+                                <Button
+                                    size="default"
+                                    onClick={handleSubmit}
                                     className="w-full sm:w-auto px-8 bg-game-teal-500 hover:bg-game-teal-600 text-white"
                                 >
                                     Submit Quiz
@@ -533,7 +531,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                             </span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                                            <motion.div 
+                                            <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${progressPercentage}%` }}
                                                 transition={{ duration: 0.5 }}
@@ -579,7 +577,7 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                 const correction = corrections.find(c => c.questionId === q._id);
                                                 const isCorrect = isSubmitted && correction && answers[q._id] === correction.correctOptionIndex;
                                                 const isBookmarked = bookmarkedQuestions.has(q._id);
-                                                
+
                                                 return (
                                                     <motion.button
                                                         key={q._id}
@@ -591,17 +589,16 @@ export function QuestionGamePlayer({ uploadId: propUploadId, onComplete }: Quest
                                                                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                                             }
                                                         }}
-                                                        className={`aspect-square rounded flex items-center justify-center text-xs font-bold transition-all relative ${
-                                                            isSubmitted
-                                                                ? isCorrect
-                                                                    ? 'bg-green-500 text-white'
-                                                                    : isAnswered
-                                                                        ? 'bg-red-500 text-white'
-                                                                        : 'bg-gray-200 text-gray-400'
+                                                        className={`aspect-square rounded flex items-center justify-center text-xs font-bold transition-all relative ${isSubmitted
+                                                            ? isCorrect
+                                                                ? 'bg-green-500 text-white'
                                                                 : isAnswered
-                                                                    ? 'bg-game-teal-500 text-white'
-                                                                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                                                        }`}
+                                                                    ? 'bg-red-500 text-white'
+                                                                    : 'bg-gray-200 text-gray-400'
+                                                            : isAnswered
+                                                                ? 'bg-game-teal-500 text-white'
+                                                                : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                                                            }`}
                                                     >
                                                         {index + 1}
                                                         {isBookmarked && !isSubmitted && (

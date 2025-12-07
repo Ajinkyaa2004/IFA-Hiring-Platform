@@ -167,17 +167,46 @@ export const GameWrapper: React.FC = () => {
   useEffect(() => {
     if (!gameStarted || isTrial) return;
 
-    const handleVisibilityChange = () => {
+    const handleVisibilityChange = async () => {
       if (document.hidden) {
         setTabSwitchCount((prev) => {
           const newCount = prev + 1;
           if (newCount >= 3) {
             setIsDisqualified(true);
-            toast.error('You have been disqualified for excessive tab switching.', {
-              duration: 5000,
-              icon: '🚫',
-            });
-            navigate('/applicant/assessment');
+
+            // Save game as failed before navigating away
+            (async () => {
+              try {
+                if (!user || !gameType) return;
+
+                const assessment = await getAssessmentByUserId(user.id);
+                if (!assessment) return;
+
+                const gameScore: GameScore = {
+                  gameType,
+                  puzzlesCompleted: 0,
+                  timeSpent: GAME_DURATION - timeRemaining,
+                  completedAt: new Date().toISOString(),
+                  trialCompleted: false,
+                  failed: true,
+                  failureReason: 'Disqualified for excessive tab switching',
+                };
+
+                assessment.games[gameType] = gameScore;
+                await saveAssessment(assessment);
+
+                toast.error('You have been disqualified for excessive tab switching.', {
+                  duration: 5000,
+                  icon: '🚫',
+                });
+
+                exitFullscreen();
+                navigate('/applicant/assessment');
+              } catch (error) {
+                console.error('Error saving disqualification:', error);
+                navigate('/applicant/assessment');
+              }
+            })();
           } else {
             setShowWarning(true);
             toast.warning(`Warning ${newCount}/3: Tab switching detected. Further violations will result in disqualification.`, {
@@ -193,7 +222,7 @@ export const GameWrapper: React.FC = () => {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [gameStarted, navigate, isTrial]);
+  }, [gameStarted, navigate, isTrial, user, gameType, timeRemaining]);
 
   const enterFullscreen = async () => {
     // On mobile devices, skip fullscreen and start game directly
@@ -279,7 +308,7 @@ export const GameWrapper: React.FC = () => {
         gameType,
         // For question game, score is the actual points, for others it's puzzles completed
         puzzlesCompleted: gameType === 'question-game' ? score : score,
-        timeSpent: GAME_DURATION - timeRemaining,
+        timeSpent: Math.max(GAME_DURATION - timeRemaining, 1),
         errorRate: gameType === 'minesweeper' ? metadata : undefined,
         minimumMoves: gameType !== 'minesweeper' && gameType !== 'question-game' ? metadata : undefined,
         maxScore: gameType === 'question-game' ? metadata : undefined, // Store max score for question game

@@ -33,10 +33,17 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+
+    // Check if origin is in allowedOrigins or is a localhost URL (any port)
+    const isAllowed = allowedOrigins.indexOf(origin) !== -1 ||
+      allowedOrigins.some(allowed => origin.startsWith(allowed)) ||
+      /^http:\/\/localhost:\d+$/.test(origin) ||
+      /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
+
+    if (isAllowed) {
       callback(null, true);
     } else {
+      console.log('❌ CORS Blocked Origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },

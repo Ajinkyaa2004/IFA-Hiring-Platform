@@ -661,35 +661,15 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
     return true;
   };
 
-  const calculateLevelScore = (levelIndex: number, moves: number, _timeSpent: number) => {
-    const level = selectedLevels[levelIndex];
-    if (!level) return 0;
-
-    const optimal = level.optimalMoves;
-    let score = 5; // Base score for completing the level
-
-    // Deduct 1 point for every extra move over optimal
-    const extraMoves = Math.max(0, moves - optimal);
-    score -= extraMoves;
-
-    // Minimum score of 1 point for completing a level
-    return Math.max(score, 1);
+  const calculateLevelScore = (_levelIndex: number, _moves: number, _timeSpent: number) => {
+    // Award exactly 5 points for every puzzle solved
+    // No deductions, no bonuses - simple scoring
+    return 5;
   };
 
   const calculateTotalScore = () => {
-    let total = 0;
-    for (let i = 0; i <= currentLevel; i++) {
-      if (levelMoves[i] > 0 || i === currentLevel) {
-        const used = i === currentLevel ? moves : levelMoves[i];
-        const timeSpent = i === currentLevel ? (levelStartTime - timeRemaining) : levelTimes[i];
-        total += calculateLevelScore(i, used, timeSpent);
-      }
-    }
-    // Add completion bonus if all levels finished
-    if (currentLevel === selectedLevels.length - 1 && allLevelsComplete) {
-      total += 200; // Completion bonus
-    }
-    return Math.round(total);
+    // Total score = numberOfPuzzlesSolved × 5
+    return puzzlesCompleted * 5;
   };
 
   const checkWin = (currentBlocks: Block[]) => {

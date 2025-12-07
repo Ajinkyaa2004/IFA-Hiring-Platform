@@ -35,13 +35,12 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
   const [won, setWon] = useState(false);
   const [level, setLevel] = useState(1);
   const [errors, setErrors] = useState(0);
+  const [wrongFlags, setWrongFlags] = useState(0);
   const [puzzlesCompleted, setPuzzlesCompleted] = useState(0);
   const [gridSize, setGridSize] = useState(8);
   const [mineCount, setMineCount] = useState(10);
   const [mineMode, setMineMode] = useState<MineMode>('normal');
   const [score, setScore] = useState(0);
-  const [levelStartTime, setLevelStartTime] = useState(timeRemaining);
-  const [levelErrors, setLevelErrors] = useState(0);
   const [cellSize, setCellSize] = useState(() => {
     if (typeof window !== 'undefined') {
       if (window.innerWidth < 640) return 32; // mobile
@@ -162,50 +161,19 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     setGrid(initializeGrid(gridSize, mineCount));
     setGameOver(false);
     setWon(false);
-    setLevelStartTime(timeRemaining);
-    setLevelErrors(0);
   }, [gridSize, mineCount, initializeGrid]);
 
   // Scoring calculation function
-  const calculateLevelScore = useCallback((currentLevel: number, timeSpent: number, levelErr: number, currentGridSize: number) => {
-    // Base score per level
-    const baseScore = 150;
-
-    // Grid bonus: larger grids = more points (scaled)
-    const gridBonus = (currentGridSize - 8) * 20; // +20 per size above base 8x8
-
-    // Speed bonus: faster completion = more points (max 100 points)
-    const speedBonus = Math.max(100 - timeSpent, 0);
-
-    // Accuracy bonus: 100 points for 0 errors
-    const accuracyBonus = levelErr === 0 ? 100 : 0;
-
-    // Error penalty: -30 points per error (hitting a mine)
-    const errorPenalty = levelErr * 30;
-
-    const levelScore = baseScore + gridBonus + speedBonus + accuracyBonus - errorPenalty;
-    return Math.max(Math.round(levelScore), 20); // Minimum 20 points per level
+  const calculateLevelScore = useCallback(() => {
+    // Award exactly 5 points for every level completed
+    // No bonuses, no penalties - simple scoring
+    return 5;
   }, []);
 
   const calculateTotalScore = useCallback(() => {
-    // Simple scoring based on levels completed and errors
-    let total = 0;
-
-    // Award points for each level completed
-    for (let i = 1; i <= puzzlesCompleted; i++) {
-      // Estimate grid size for past levels
-      const pastGridSize = 8 + Math.floor((i - 1) / 3);
-      // Estimate average performance
-      const avgTime = 30;
-      const avgErrors = errors / Math.max(puzzlesCompleted, 1);
-      total += calculateLevelScore(i, avgTime, Math.floor(avgErrors), Math.min(pastGridSize, 12));
-    }
-
-    // Error penalty
-    const errorPenalty = errors * 30;
-
-    return Math.max(total - errorPenalty, 0);
-  }, [puzzlesCompleted, errors, calculateLevelScore]);
+    // Total score = (levelsCompleted × 5) - wrongFlags
+    return Math.max((puzzlesCompleted * 5) - wrongFlags, 0);
+  }, [puzzlesCompleted, wrongFlags]);
 
   useEffect(() => {
     if (timeRemaining === 0 && !isTrialMode) {
@@ -224,15 +192,12 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
       setGrid(newGrid);
       setGameOver(true);
       setErrors(prev => prev + 1);
-      setLevelErrors(prev => prev + 1);
 
       // Auto-restart after brief delay - generate new grid
       setTimeout(() => {
         setGameOver(false);
         const freshGrid = initializeGrid(gridSize, mineCount);
         setGrid(freshGrid);
-        setLevelStartTime(timeRemaining);
-        setLevelErrors(0);
       }, 1500);
       return;
     }
@@ -270,10 +235,9 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
       setWon(true);
       setPuzzlesCompleted(prev => prev + 1);
 
-      // Calculate and add score for this level
-      const timeSpent = levelStartTime - timeRemaining;
-      const levelScore = calculateLevelScore(level, timeSpent, levelErrors, gridSize);
-      setScore(prev => prev + levelScore);
+      // Calculate and update total score
+      const levelScore = calculateLevelScore();
+      setScore(calculateTotalScore() + levelScore);
 
       // Move to next level
       setTimeout(() => {
@@ -294,7 +258,20 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     if (gameOver || won || grid[row][col].isRevealed) return;
 
     const newGrid = [...grid.map(r => [...r])];
-    newGrid[row][col].isFlagged = !newGrid[row][col].isFlagged;
+    const cell = newGrid[row][col];
+    const wasNotFlagged = !cell.isFlagged;
+
+    cell.isFlagged = !cell.isFlagged;
+
+    // Track wrong flags: if flagging a non-mine cell, increment wrongFlags
+    if (wasNotFlagged && !cell.isMine) {
+      setWrongFlags(prev => prev + 1);
+    }
+    // If unflagging a wrong flag, decrement wrongFlags
+    else if (!wasNotFlagged && !cell.isMine) {
+      setWrongFlags(prev => Math.max(0, prev - 1));
+    }
+
     setGrid(newGrid);
   };
 

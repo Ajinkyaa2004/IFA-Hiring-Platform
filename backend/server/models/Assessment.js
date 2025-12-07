@@ -23,6 +23,10 @@ const assessmentSchema = new mongoose.Schema({
       type: Object,
       default: null,
     },
+    'question-game': {
+      type: Object,
+      default: null,
+    },
   },
   totalScore: {
     type: Number,

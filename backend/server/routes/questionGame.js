@@ -195,7 +195,7 @@ router.post('/manual', upload.single('coverImage'), async (req, res) => {
 router.post('/manual-with-images', upload.any(), async (req, res) => {
     try {
         console.log("Manual quiz with images creation request received");
-        
+
         let { title, questions } = req.body;
 
         // Parse questions if it's a string
@@ -246,7 +246,7 @@ router.post('/manual-with-images', upload.any(), async (req, res) => {
         const savedQuestions = [];
         for (let i = 0; i < questions.length; i++) {
             const q = questions[i];
-            
+
             // Get question image if exists
             const questionImageKey = `questionImage_${q.questionImageIndex}`;
             const questionImageUrl = fileMap[questionImageKey] || undefined;
@@ -259,7 +259,7 @@ router.post('/manual-with-images', upload.any(), async (req, res) => {
                     // Get option image if exists
                     const optionImageKey = `optionImage_${opt.optionImageIndex}`;
                     const optionImageUrl = fileMap[optionImageKey] || undefined;
-                    
+
                     return {
                         text: opt.text,
                         imageUrl: optionImageUrl,
@@ -330,16 +330,17 @@ router.post('/score', async (req, res) => {
         let maxScore = 0;
         const corrections = [];
 
-        // Calculate score
+        // Calculate score - Simple logic: 1 question = 1 mark
         for (const q of questions) {
-            const questionPoints = q.points || 1;
-            maxScore += questionPoints;
+            // Always 1 point per question, regardless of q.points field
+            maxScore += 1;
 
             const userAnswer = answers.find(a => a.questionId === q._id.toString());
             const correctOptionIndex = q.options.findIndex(o => o.isCorrect);
 
             if (userAnswer && userAnswer.selectedOptionIndex === correctOptionIndex) {
-                score += questionPoints;
+                // Award exactly 1 mark for correct answer
+                score += 1;
             }
 
             corrections.push({

@@ -209,41 +209,16 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
   }, [currentPuzzle, initializePuzzle]);
 
   // Scoring calculation functions
-  const calculatePuzzleScore = useCallback((puzzleIndex: number, stepsUsed: number) => {
-    if (!puzzles[puzzleIndex]) return 0;
-
-    const puzzle = puzzles[puzzleIndex];
-    const numberOfJugs = puzzle.jugs.length;
-
-    // Base score per puzzle
-    const baseScore = 120;
-
-    // Complexity bonus: more jugs = higher multiplier
-    const complexityBonus = (numberOfJugs - 2) * 30; // +30 points per jug above 2
-
-    // Estimate optimal steps (heuristic based on jugs and capacities)
-    const avgCapacity = puzzle.jugs.reduce((sum, j) => sum + j.capacity, 0) / numberOfJugs;
-    const optimalSteps = Math.ceil(numberOfJugs * 2 + Math.log2(avgCapacity));
-
-    // Efficiency bonus: 60 points for solving within optimal steps
-    const efficiencyBonus = stepsUsed <= optimalSteps ? 60 : 0;
-
-    // Penalty: -8 points per extra step beyond optimal
-    const excessSteps = Math.max(0, stepsUsed - optimalSteps);
-    const stepPenalty = excessSteps * 8;
-
-    const puzzleScore = baseScore + complexityBonus + efficiencyBonus - stepPenalty;
-    return Math.max(Math.round(puzzleScore), 20); // Minimum 20 points per puzzle
-  }, [puzzles]);
+  const calculatePuzzleScore = useCallback((_puzzleIndex: number, _stepsUsed: number) => {
+    // Award exactly 5 points for every level completed
+    // No bonuses, no penalties - simple scoring
+    return 5;
+  }, []);
 
   const calculateTotalScore = useCallback(() => {
-    const totalPuzzleScore = puzzleScores.reduce((sum, s) => sum + s, 0);
-
-    // Completion bonus for finishing all puzzles
-    const completionBonus = puzzlesCompleted >= puzzles.length ? 300 : 0;
-
-    return totalPuzzleScore + completionBonus;
-  }, [puzzleScores, puzzlesCompleted, puzzles.length]);
+    // Total score = levelsCompleted × 5
+    return puzzlesCompleted * 5;
+  }, [puzzlesCompleted]);
 
   useEffect(() => {
     if (timeRemaining === 0 && !isTrialMode) {

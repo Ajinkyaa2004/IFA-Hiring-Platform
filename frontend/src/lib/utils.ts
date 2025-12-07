@@ -30,19 +30,18 @@ export function calculateTotalScore(
   waterCapacityScore: number,
   questionGameScore: number = 0
 ): number {
-  // Calculate total score based on raw performance without caps
-  // Assign points per puzzle: Minesweeper (5), Unblock Me (6), Water Capacity (3)
-  const minesweeperPoints = minesweeperScore * 5;
-  const unblockMePoints = unblockMeScore * 6;
-  const waterCapacityPoints = waterCapacityScore * 3;
-  // Question Game score is already in points (e.g. 8/10), so we add it directly.
-  // We multiply by 10 to give it more weight relative to the other games if needed,
-  // but for now let's keep it raw or maybe x10 to match the scale of other games?
-  // If other games give ~150 points total, and quiz is 10, it's negligible.
-  // Let's multiply by 10 to make a 10/10 quiz worth 100 points.
-  const questionGamePoints = questionGameScore * 10;
+  // SIMPLE SCORING LOGIC:
+  // - Unblock Me: 5 points per puzzle solved
+  // - Water Capacity: 5 points per level completed
+  // - Minesweeper: 5 points per level completed (already includes -1 per wrong flag in game logic)
+  // - Question Game: 1 point per correct answer
 
-  return Math.round(minesweeperPoints + unblockMePoints + waterCapacityPoints + questionGamePoints);
+  const unblockMePoints = unblockMeScore * 5;
+  const waterCapacityPoints = waterCapacityScore * 5;
+  const minesweeperPoints = minesweeperScore; // Minesweeper score in DB is already calculated points
+  const questionGamePoints = questionGameScore * 1; // 1 point per correct answer
+
+  return Math.round(unblockMePoints + waterCapacityPoints + minesweeperPoints + questionGamePoints);
 }
 
 export function formatDate(dateString: string): string {
