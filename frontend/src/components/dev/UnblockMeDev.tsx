@@ -10,10 +10,11 @@ export const UnblockMeDev: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
         <h1 className="text-3xl font-bold text-center mb-8">Unblock Me - Dev Mode</h1>
-        <UnblockMe 
-            onComplete={handleComplete} 
-            timeRemaining={9999} 
-            isTrialMode={true} 
+        <UnblockMe
+            onComplete={handleComplete}
+            timeRemaining={9999}
+            isTrialMode={true}
+            devMode={true}
         />
     </div>
   );

@@ -48,6 +48,11 @@ const profileSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  // Candidate id assigned by the hiring tracker (?cid= link)
+  trackerCid: {
+    type: String,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

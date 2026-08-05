@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Trophy, RotateCcw, Sparkles, Zap, Star, Target, Droplet, Droplets, ArrowRightLeft, CheckCircle2 } from 'lucide-react';
-import { useTabSwitchDetection } from '@/hooks/useTabSwitchDetection';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Jug {
@@ -19,7 +17,13 @@ interface Puzzle {
 }
 
 interface WaterCapacityProps {
-  onComplete: (score: number, totalSteps: number, failed?: boolean, failureReason?: string) => void;
+  onComplete: (
+    score: number,
+    totalSteps: number,
+    failed?: boolean,
+    failureReason?: string,
+    details?: { puzzleSteps: number[]; puzzleScores: number[] }
+  ) => void;
   timeRemaining: number;
   isTrialMode?: boolean;
 }
@@ -136,7 +140,6 @@ const MAIN_PUZZLES: Puzzle[] = [
 ];
 
 export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRemaining, isTrialMode = false }) => {
-  const navigate = useNavigate();
   const [jugs, setJugs] = useState<Jug[]>([]);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
   const [steps, setSteps] = useState(0);
@@ -147,35 +150,20 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
   const [puzzleSteps, setPuzzleSteps] = useState<number[]>([]);
   const [puzzleScores, setPuzzleScores] = useState<number[]>([]);
 
-  // Randomize the puzzle order for each game session
-  const puzzles = useMemo(() => {
-    const puzzleArray = isTrialMode ? TRIAL_PUZZLES : MAIN_PUZZLES;
-
-    // Fisher-Yates shuffle algorithm
-    const shuffled = [...puzzleArray];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }, [isTrialMode]);
+  // Fixed puzzle order — every candidate faces the same sequence, so scores
+  // are comparable between candidates.
+  const puzzles = useMemo(
+    () => (isTrialMode ? TRIAL_PUZZLES : MAIN_PUZZLES),
+    [isTrialMode]
+  );
 
   const activePuzzle = useMemo(
     () => (puzzles.length > 0 ? puzzles[currentPuzzle % puzzles.length] : null),
     [puzzles, currentPuzzle]
   );
 
-  // Tab switch detection - only enabled when not in trial mode
-  useTabSwitchDetection({
-    maxViolations: 3,
-    enabled: !isTrialMode,
-    onDisqualified: () => {
-      // Mark as failed and navigate to assessment page
-      const finalScore = calculateTotalScore();
-      onComplete(finalScore, totalSteps, true, 'Disqualified due to tab switching violations');
-      navigate('/applicant/assessment');
-    },
-  });
+  // Tab-switch detection is handled centrally by GameWrapper — a second
+  // listener here would double-count every switch.
 
   const initializePuzzle = useCallback((puzzleIndex: number) => {
     if (puzzles.length === 0) {
@@ -230,7 +218,7 @@ export const WaterCapacity: React.FC<WaterCapacityProps> = ({ onComplete, timeRe
   useEffect(() => {
     if (timeRemaining === 0 && !isTrialMode) {
       const finalScore = calculateTotalScore();
-      onComplete(finalScore, totalSteps);
+      onComplete(finalScore, totalSteps, undefined, undefined, { puzzleSteps, puzzleScores });
     }
   }, [timeRemaining, totalSteps, onComplete, isTrialMode, calculateTotalScore]);
 

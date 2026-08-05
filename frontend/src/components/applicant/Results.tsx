@@ -372,7 +372,7 @@ export const Results: React.FC = () => {
                             <span className="text-xs font-medium">Time</span>
                           </div>
                           <span className="font-bold text-gray-700 text-sm">
-                            {Math.floor(game.score.timeSpent / 60)}:{(game.score.timeSpent % 60).toString().padStart(2, '0')}
+                            {Math.floor((game.score.timeSpent ?? 0) / 60)}:{((game.score.timeSpent ?? 0) % 60).toString().padStart(2, '0')}
                           </span>
                         </div>
 

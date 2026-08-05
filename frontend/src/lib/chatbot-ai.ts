@@ -56,7 +56,7 @@ Be concise, friendly, and helpful. Keep responses under 150 words unless detaile
   }
 };
 
-export const generateRelatedQuestions = (userQuery: string, botResponse: string): string[] => {
+export const generateRelatedQuestions = (userQuery: string, _botResponse: string): string[] => {
   // Generate contextual related questions based on the topic
   const relatedQuestionsMap: Record<string, string[]> = {
     time: [

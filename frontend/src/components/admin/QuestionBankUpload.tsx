@@ -143,10 +143,10 @@ export function QuestionBankUpload() {
             const formData = new FormData();
 
             // Process questions and collect images
-            const questionsData = questions.map((q, qIdx) => {
+            const questionsData = questions.map((q) => {
                 return {
                     questionText: q.questionText,
-                    options: q.options.map((opt, optIdx) => ({
+                    options: q.options.map((opt) => ({
                         optionText: opt.optionText,
                         isCorrect: opt.isCorrect
                     })),

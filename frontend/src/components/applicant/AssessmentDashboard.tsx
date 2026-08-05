@@ -192,6 +192,8 @@ export const AssessmentDashboard: React.FC = () => {
           userAssessment = {
             userId: user.id,
             candidateId: userProfile.candidateId,
+            // Join key assigned by the hiring tracker (?cid= link)
+            trackerCid: localStorage.getItem('ifa_tracker_cid') || undefined,
             games: {
               minesweeper: null,
               'unblock-me': null,
@@ -229,21 +231,24 @@ export const AssessmentDashboard: React.FC = () => {
     loadData();
   }, [user, navigate]);
 
+  // Unlocking must key off actual completion (timeSpent recorded), not the
+  // mere presence of a record — an in-progress attempt would otherwise
+  // unlock the next game early.
   const isGameUnlocked = (gameType: GameType): boolean => {
     if (!assessment) return false;
 
     if (gameType === 'unblock-me') return true;
     if (gameType === 'minesweeper') {
-      return assessment.games['unblock-me'] !== null;
+      return isGameCompleted('unblock-me');
     }
     if (gameType === 'water-capacity') {
-      return assessment.games.minesweeper !== null;
+      return isGameCompleted('minesweeper');
     }
     if (gameType === 'question-game') {
       // Question Game unlocks only after all three games are completed
-      return assessment.games['unblock-me'] !== null &&
-        assessment.games.minesweeper !== null &&
-        assessment.games['water-capacity'] !== null;
+      return isGameCompleted('unblock-me') &&
+        isGameCompleted('minesweeper') &&
+        isGameCompleted('water-capacity');
     }
     return false;
   };
@@ -253,16 +258,16 @@ export const AssessmentDashboard: React.FC = () => {
 
     if (gameType === 'unblock-me') return true;
     if (gameType === 'minesweeper') {
-      return assessment.games['unblock-me'] !== null;
+      return isGameCompleted('unblock-me');
     }
     if (gameType === 'water-capacity') {
-      return assessment.games.minesweeper !== null;
+      return isGameCompleted('minesweeper');
     }
     if (gameType === 'question-game') {
       // Question Game trial unlocks only after all three games are completed
-      return assessment.games['unblock-me'] !== null &&
-        assessment.games.minesweeper !== null &&
-        assessment.games['water-capacity'] !== null;
+      return isGameCompleted('unblock-me') &&
+        isGameCompleted('minesweeper') &&
+        isGameCompleted('water-capacity');
     }
     return false;
   };
@@ -289,11 +294,12 @@ export const AssessmentDashboard: React.FC = () => {
     }, 500);
   };
 
-  // Check all three games in the new order
-  const allGamesCompleted = assessment?.games['unblock-me'] !== null &&
-    assessment?.games.minesweeper !== null &&
-    assessment?.games['water-capacity'] !== null &&
-    assessment?.games['question-game'] !== null;
+  // Check all games in the new order (completed = actually played, not just
+  // an in-progress attempt record)
+  const allGamesCompleted = isGameCompleted('unblock-me') &&
+    isGameCompleted('minesweeper') &&
+    isGameCompleted('water-capacity') &&
+    isGameCompleted('question-game');
 
   const hasFailedGame = assessment?.games['unblock-me']?.failed ||
     assessment?.games.minesweeper?.failed ||
@@ -809,8 +815,9 @@ export const AssessmentDashboard: React.FC = () => {
                                       transition={{ duration: 0.3 }}
                                       className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800"
                                     >
-                                      You can replay this game in the next <strong>7 days</strong>.
-                                      Until then, this game will be unavailable for you to attempt again.
+                                      Each game allows a <strong>single scored attempt</strong>, and this
+                                      attempt has been recorded. If you believe a technical problem caused
+                                      this, contact the IFA recruitment team.
                                     </motion.div>
                                   )}
                                 </div>
@@ -821,7 +828,7 @@ export const AssessmentDashboard: React.FC = () => {
                                   Score: <AnimatedCounter value={score.puzzlesCompleted} duration={1.5} /> puzzles completed
                                 </div>
                                 <div className="text-[10px] sm:text-xs text-game-purple-600">
-                                  Time: {Math.floor(score.timeSpent / 60)}:{(score.timeSpent % 60).toString().padStart(2, '0')}
+                                  Time: {Math.floor((score.timeSpent ?? 0) / 60)}:{((score.timeSpent ?? 0) % 60).toString().padStart(2, '0')}
                                 </div>
                               </>
                             )}

@@ -97,21 +97,55 @@ export const AdminDashboard: React.FC = () => {
       }
     });
 
+  // RFC-4180 escaping — a name containing a comma or quote must not shear the row
+  const csvCell = (val: unknown): string => {
+    const s = val === null || val === undefined ? '' : String(val);
+    return `"${s.replace(/"/g, '""')}"`;
+  };
+
+  const buildCsv = (headers: string[], rows: unknown[][]): string =>
+    [headers.map(csvCell).join(','), ...rows.map(r => r.map(csvCell).join(','))].join('\n');
+
   const exportData = () => {
-    const data = activeTab === 'leaderboard' ? filteredLeaderboard : filteredProfiles;
-    const csv = convertToCSV(data);
-    downloadCSV(csv, `${activeTab}-data-${new Date().toISOString().split('T')[0]}.csv`);
+    if (activeTab === 'leaderboard') {
+      // Flattened per-game columns — nested objects previously exported as
+      // "[object Object]" and every score was lost
+      const headers = [
+        'rank', 'candidateId', 'trackerCid', 'name', 'email', 'college',
+        'totalScore', 'totalTimeSpentSec', 'excessMovesVsOptimal',
+        'unblockMeScore', 'unblockMeTimeSec', 'unblockMeAttempts',
+        'minesweeperScore', 'minesweeperTimeSec', 'minesweeperAttempts',
+        'waterCapacityScore', 'waterCapacityTimeSec', 'waterCapacityAttempts',
+        'questionGameScore', 'questionGameTimeSec', 'questionGameAttempts',
+        'flagged', 'failureReasons', 'completedAt',
+      ];
+      const rows = filteredLeaderboard.map((entry, index) => [
+        index + 1, entry.candidateId, entry.trackerCid ?? '', entry.name, entry.email, entry.collegeName,
+        entry.totalScore, entry.totalTimeSpent ?? '', entry.totalExcessMoves ?? '',
+        entry.gameScores.unblockMe, entry.gameTimes?.unblockMe ?? '', entry.attempts?.unblockMe ?? '',
+        entry.gameScores.minesweeper, entry.gameTimes?.minesweeper ?? '', entry.attempts?.minesweeper ?? '',
+        entry.gameScores.waterCapacity, entry.gameTimes?.waterCapacity ?? '', entry.attempts?.waterCapacity ?? '',
+        entry.gameScores.questionGame, entry.gameTimes?.questionGame ?? '', entry.attempts?.questionGame ?? '',
+        entry.hasFailedGame ? 'YES' : 'no', (entry.failureReasons || []).join('; '), entry.completedAt,
+      ]);
+      downloadCSV(buildCsv(headers, rows), `leaderboard-data-${new Date().toISOString().split('T')[0]}.csv`);
+    } else {
+      const headers = [
+        'candidateId', 'trackerCid', 'name', 'email', 'phone', 'college', 'cgpa',
+        'location', 'telegramId', 'interestedRoles', 'resumeLink', 'websiteLink',
+        'profileCompleted', 'createdAt',
+      ];
+      const rows = filteredProfiles.map(p => [
+        p.candidateId, p.trackerCid ?? '', p.name, p.email, p.phone, p.collegeName, p.cgpa,
+        p.location, p.telegramId, (p.interestedRoles || []).join('; '), p.resumeLink ?? '', p.websiteLink ?? '',
+        p.profileCompleted ? 'yes' : 'no', p.createdAt,
+      ]);
+      downloadCSV(buildCsv(headers, rows), `candidates-data-${new Date().toISOString().split('T')[0]}.csv`);
+    }
     toast.success('Data exported successfully!', {
       duration: 2000,
       icon: '📥',
     });
-  };
-
-  const convertToCSV = (data: any[]) => {
-    if (data.length === 0) return '';
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map(obj => Object.values(obj).map(val => `"${val}"`).join(','));
-    return [headers, ...rows].join('\n');
   };
 
   const downloadCSV = (csv: string, filename: string) => {
@@ -725,6 +759,7 @@ export const AdminDashboard: React.FC = () => {
                           </div>
                         </th>
                         <th className="px-4 py-3 text-left font-bold text-game-teal-700">Time Spent</th>
+                        <th className="px-4 py-3 text-left font-bold text-red-700">Flags</th>
                         <th className="px-4 py-3 text-left font-bold text-game-teal-700">Completed</th>
                       </tr>
                     </thead>
@@ -785,6 +820,18 @@ export const AdminDashboard: React.FC = () => {
                             <td className="px-4 py-3 font-bold text-blue-600">{entry.gameScores.questionGame}</td>
                             <td className="px-4 py-3 font-mono text-sm text-gray-600">
                               {formatTime(entry.totalTimeSpent)}
+                            </td>
+                            <td className="px-4 py-3">
+                              {entry.hasFailedGame ? (
+                                <span
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold border border-red-300"
+                                  title={(entry.failureReasons || []).join('\n')}
+                                >
+                                  🚫 DQ/Failed
+                                </span>
+                              ) : (
+                                <span className="text-xs text-green-600 font-semibold">Clean</span>
+                              )}
                             </td>
                             <td className="px-4 py-3 text-xs text-gray-500 font-medium">
                               {new Date(entry.completedAt).toLocaleDateString()}

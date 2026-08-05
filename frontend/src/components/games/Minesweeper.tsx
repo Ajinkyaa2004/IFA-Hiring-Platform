@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Target, Flame, Sparkles, Flag, CheckCircle2, AlertCircle, MousePointer, Bomb, Zap, Star, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTabSwitchDetection } from '@/hooks/useTabSwitchDetection';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Cell {
   isMine: boolean;
@@ -13,10 +12,37 @@ interface Cell {
 }
 
 interface MinesweeperProps {
-  onComplete: (score: number, errors: number, failed?: boolean, failureReason?: string) => void;
+  onComplete: (
+    score: number,
+    errors: number,
+    failed?: boolean,
+    failureReason?: string,
+    details?: { wrongFlags: number; levelsCompleted: number }
+  ) => void;
   timeRemaining: number;
   isTrialMode?: boolean;
 }
+
+// Deterministic PRNG so every candidate's board sequence is reproducible and
+// auditable (seeded from candidate id + level + board attempt).
+const hashString = (s: string): number => {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+};
+
+const mulberry32 = (seed: number) => {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
 
 type MineMode = 'veryFew' | 'few' | 'normal' | 'many' | 'full';
 
@@ -29,7 +55,7 @@ const mineModeLabels: Record<MineMode, string> = {
 };
 
 export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemaining, isTrialMode = false }) => {
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [grid, setGrid] = useState<Cell[][]>([]);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
@@ -50,17 +76,17 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     return 40;
   });
 
-  // Tab switch detection - only enabled when not in trial mode
-  useTabSwitchDetection({
-    maxViolations: 3,
-    enabled: !isTrialMode,
-    onDisqualified: () => {
-      // Mark as failed and navigate to assessment page
-      const finalScore = calculateTotalScore();
-      onComplete(finalScore, errors, true, 'Disqualified due to tab switching violations');
-      navigate('/applicant/assessment');
-    },
-  });
+  // Tab-switch detection is handled centrally by GameWrapper — a second
+  // listener here would double-count every switch.
+
+  // Boards must be identical for every attempt sequence of a given candidate:
+  // seeded from candidate id + level + board attempt. First click never hits a
+  // mine because mines are placed only after it, excluding its neighborhood.
+  const [boardAttempt, setBoardAttempt] = useState(0);
+  const [minesPlaced, setMinesPlaced] = useState(false);
+  const longPressTimer = useRef<number | null>(null);
+  const suppressClickRef = useRef(false);
+  const seedBase = `${user?.id ?? 'anonymous'}:${isTrialMode ? 'trial' : 'scored'}`;
 
   const calculateMineCount = useCallback((mode: MineMode, size: number, currentLevel: number) => {
     const maxMines = size * size - 1;
@@ -79,42 +105,54 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     }
   }, []);
 
-  const initializeGrid = useCallback((size: number, mines: number) => {
-    const newGrid: Cell[][] = Array(size).fill(null).map(() =>
+  // Boards start empty; mines are placed on the first click (see placeMines),
+  // so the first click can never be a luck death.
+  const makeEmptyGrid = useCallback((size: number): Cell[][] =>
+    Array(size).fill(null).map(() =>
       Array(size).fill(null).map(() => ({
         isMine: false,
         isRevealed: false,
         isFlagged: false,
         neighborMines: 0,
       }))
-    );
+    ), []);
 
-    // Place mines randomly
-    let placedMines = 0;
+  // Mutates `grid` in place: seeded mine placement excluding the first-clicked
+  // cell and its 8 neighbours, then neighbour counts.
+  const placeMines = useCallback((
+    targetGrid: Cell[][],
+    size: number,
+    mines: number,
+    safeRow: number,
+    safeCol: number,
+    seedKey: string,
+  ) => {
+    const rng = mulberry32(hashString(seedKey));
+    const isSafeZone = (r: number, c: number) =>
+      Math.abs(r - safeRow) <= 1 && Math.abs(c - safeCol) <= 1;
+
     const totalCells = size * size;
-    let safeCellIndex = -1;
+    // 'full' mode keeps only the clicked cell safe; others protect the 3x3 zone
+    const protectedCells = mineMode === 'full' ? 1 : Math.min(9, totalCells);
+    const mineTarget = Math.min(mines, totalCells - protectedCells);
 
-    if (mineMode === 'full') {
-      safeCellIndex = Math.floor(Math.random() * totalCells);
-    }
-
-    while (placedMines < mines) {
-      const index = Math.floor(Math.random() * totalCells);
-      if (index === safeCellIndex) continue;
-
+    let placed = 0;
+    let guard = 0;
+    while (placed < mineTarget && guard < totalCells * 100) {
+      guard++;
+      const index = Math.floor(rng() * totalCells);
       const row = Math.floor(index / size);
       const col = index % size;
-
-      if (!newGrid[row][col].isMine) {
-        newGrid[row][col].isMine = true;
-        placedMines++;
+      if (mineMode === 'full' ? (row === safeRow && col === safeCol) : isSafeZone(row, col)) continue;
+      if (!targetGrid[row][col].isMine) {
+        targetGrid[row][col].isMine = true;
+        placed++;
       }
     }
 
-    // Calculate neighbor mines
     for (let row = 0; row < size; row++) {
       for (let col = 0; col < size; col++) {
-        if (!newGrid[row][col].isMine) {
+        if (!targetGrid[row][col].isMine) {
           let count = 0;
           for (let dr = -1; dr <= 1; dr++) {
             for (let dc = -1; dc <= 1; dc++) {
@@ -123,18 +161,16 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
               if (
                 newRow >= 0 && newRow < size &&
                 newCol >= 0 && newCol < size &&
-                newGrid[newRow][newCol].isMine
+                targetGrid[newRow][newCol].isMine
               ) {
                 count++;
               }
             }
           }
-          newGrid[row][col].neighborMines = count;
+          targetGrid[row][col].neighborMines = count;
         }
       }
     }
-
-    return newGrid;
   }, [mineMode]);
 
   useEffect(() => {
@@ -142,26 +178,27 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     setMineCount(count);
   }, [gridSize, mineMode, level, calculateMineCount]);
 
+  // Cells shrink so the growing grid always fits the viewport — late levels
+  // previously overflowed small phone screens.
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 640) {
-        setCellSize(32); // mobile
-      } else if (window.innerWidth < 1024) {
-        setCellSize(40); // tablet
-      } else {
-        setCellSize(40); // desktop
-      }
+      const base = window.innerWidth < 640 ? 32 : 40;
+      const available = Math.min(window.innerWidth, 672) - 64; // container padding
+      const perCell = Math.floor(available / gridSize) - 5;    // minus grid gap
+      setCellSize(Math.max(20, Math.min(base, perCell)));
     };
 
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [gridSize]);
 
   useEffect(() => {
-    setGrid(initializeGrid(gridSize, mineCount));
+    setGrid(makeEmptyGrid(gridSize));
+    setMinesPlaced(false);
     setGameOver(false);
     setWon(false);
-  }, [gridSize, mineCount, initializeGrid]);
+  }, [gridSize, mineCount, level, boardAttempt, makeEmptyGrid]);
 
   // Scoring calculation function
   const calculateLevelScore = useCallback(() => {
@@ -178,14 +215,26 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
   useEffect(() => {
     if (timeRemaining === 0 && !isTrialMode) {
       const finalScore = calculateTotalScore();
-      onComplete(finalScore, errors);
+      onComplete(finalScore, errors, undefined, undefined, {
+        wrongFlags,
+        levelsCompleted: puzzlesCompleted,
+      });
     }
-  }, [timeRemaining, errors, onComplete, isTrialMode, calculateTotalScore]);
+  }, [timeRemaining, errors, onComplete, isTrialMode, calculateTotalScore, wrongFlags, puzzlesCompleted]);
 
   const revealCell = (row: number, col: number) => {
     if (gameOver || won || grid[row][col].isRevealed || grid[row][col].isFlagged) return;
 
-    const newGrid = [...grid.map(r => [...r])];
+    const newGrid = [...grid.map(r => [...r.map(c => ({ ...c }))])];
+
+    // First click of a board: place mines now, away from the clicked cell,
+    // with a deterministic per-candidate seed.
+    let placedThisClick = false;
+    if (!minesPlaced) {
+      placeMines(newGrid, gridSize, mineCount, row, col, `${seedBase}:${level}:${boardAttempt}`);
+      setMinesPlaced(true);
+      placedThisClick = true;
+    }
 
     if (newGrid[row][col].isMine) {
       newGrid[row][col].isRevealed = true;
@@ -193,11 +242,9 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
       setGameOver(true);
       setErrors(prev => prev + 1);
 
-      // Auto-restart after brief delay - generate new grid
+      // Auto-restart after brief delay - next deterministic board for this level
       setTimeout(() => {
-        setGameOver(false);
-        const freshGrid = initializeGrid(gridSize, mineCount);
-        setGrid(freshGrid);
+        setBoardAttempt(prev => prev + 1);
       }, 1500);
       return;
     }
@@ -226,8 +273,8 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     reveal(row, col);
     setGrid(newGrid);
 
-    // Check win condition
-    const allSafeCellsRevealed = newGrid.every((row) =>
+    // Check win condition (only meaningful once mines exist on the board)
+    const allSafeCellsRevealed = (minesPlaced || placedThisClick) && newGrid.every((row) =>
       row.every((cell) => cell.isMine || cell.isRevealed)
     );
 
@@ -253,8 +300,8 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     }
   };
 
-  const toggleFlag = (row: number, col: number, e: React.MouseEvent) => {
-    e.preventDefault();
+  const toggleFlag = (row: number, col: number, e?: React.MouseEvent) => {
+    e?.preventDefault();
     if (gameOver || won || grid[row][col].isRevealed) return;
 
     const newGrid = [...grid.map(r => [...r])];
@@ -273,6 +320,34 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
     }
 
     setGrid(newGrid);
+  };
+
+  // Long-press flagging for touch devices (iOS Safari never fires contextmenu,
+  // so right-click-only flagging locked phone users out of half the game).
+  const handleTouchStart = (row: number, col: number) => {
+    cancelLongPress();
+    longPressTimer.current = window.setTimeout(() => {
+      longPressTimer.current = null;
+      suppressClickRef.current = true;
+      if (navigator.vibrate) navigator.vibrate(40);
+      toggleFlag(row, col);
+    }, 450);
+  };
+
+  const cancelLongPress = () => {
+    if (longPressTimer.current !== null) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleCellClick = (row: number, col: number) => {
+    // Swallow the synthetic click that follows a long-press flag
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+    revealCell(row, col);
   };
 
   const getCellColor = (cell: Cell) => {
@@ -497,7 +572,9 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
         </motion.div>
       </motion.div>
 
-      {/* Mine Mode Selection */}
+      {/* Mine Mode Selection — practice only. Scored runs are locked to
+          'normal' so every candidate faces identical difficulty. */}
+      {isTrialMode && (
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -518,6 +595,7 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
           </Button>
         ))}
       </motion.div>
+      )}
 
       {/* Win Animation */}
       <AnimatePresence>
@@ -600,7 +678,7 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
               </p>
               <p className="flex items-center gap-2">
                 <Flag className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed] flex-shrink-0" />
-                <span><strong>Right-click</strong> to flag mines</span>
+                <span><strong>Right-click</strong> (or <strong>long-press</strong> on touch screens) to flag mines</span>
               </p>
               <p className="flex items-center gap-2">
                 <Target className="w-4 h-4 sm:w-5 sm:h-5 text-[#8558ed] flex-shrink-0" />
@@ -635,11 +713,22 @@ export const Minesweeper: React.FC<MinesweeperProps> = ({ onComplete, timeRemain
                   }}
                   whileHover={{ scale: cell.isRevealed ? 1 : 1.1, y: cell.isRevealed ? 0 : -2 }}
                   whileTap={{ scale: 0.95 }}
-                  style={{ width: cellSize, height: cellSize }}
+                  style={{
+                    width: cellSize,
+                    height: cellSize,
+                    touchAction: 'manipulation',
+                    WebkitTouchCallout: 'none',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                  }}
                   className={`flex items-center justify-center text-xs sm:text-sm font-bold rounded-md sm:rounded-lg transition-all duration-200 ${getCellColor(cell)} ${!cell.isRevealed ? 'shadow-md hover:shadow-lg' : ''
                     }`}
-                  onClick={() => revealCell(rowIndex, colIndex)}
+                  onClick={() => handleCellClick(rowIndex, colIndex)}
                   onContextMenu={(e) => toggleFlag(rowIndex, colIndex, e)}
+                  onTouchStart={() => handleTouchStart(rowIndex, colIndex)}
+                  onTouchEnd={cancelLongPress}
+                  onTouchMove={cancelLongPress}
+                  onTouchCancel={cancelLongPress}
                   disabled={gameOver || won}
                 >
                   <motion.span

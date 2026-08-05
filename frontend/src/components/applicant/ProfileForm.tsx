@@ -304,6 +304,7 @@ export const ProfileForm: React.FC = () => {
         resumeLink: profile.resumeLink,
         websiteLink: profile.websiteLink,
         profileCompleted: true, // ✅ CRITICAL: Set to true
+        trackerCid: localStorage.getItem('ifa_tracker_cid') || undefined,
         createdAt: new Date().toISOString(),
       };
 
@@ -354,6 +355,7 @@ export const ProfileForm: React.FC = () => {
         resumeLink: profile.resumeLink,
         websiteLink: profile.websiteLink,
         profileCompleted: false, // ✅ Mark as incomplete
+        trackerCid: localStorage.getItem('ifa_tracker_cid') || undefined,
         createdAt: new Date().toISOString(),
       };
 

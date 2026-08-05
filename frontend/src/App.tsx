@@ -20,7 +20,6 @@ import { UnblockMeDev } from "@/components/dev/UnblockMeDev";
 import { WaterCapacityDev } from "@/components/dev/WaterCapacityDev";
 import { QuestionGameUpload } from "@/components/admin/QuestionGameUpload";
 import { ManualQuizCreator } from "@/components/admin/ManualQuizCreator";
-import { ImageQuizPlayer } from "@/components/games/ImageQuizPlayer";
 import { QuestionGamePlayer } from "@/components/games/QuestionGamePlayer";
 import { QuestionEditor } from "@/components/admin/QuestionEditor";
 import { QuestionScores } from "@/components/admin/QuestionScores";
@@ -35,7 +34,18 @@ const ProtectedRoute: React.FC<{
   children: React.ReactNode;
   allowedRoles: string[];
 }> = ({ children, allowedRoles }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  // Auth hydrates from localStorage asynchronously — redirecting before it
+  // finishes would bounce every page refresh (including mid-game resumes)
+  // back to the role-selection screen.
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f3f0fc] via-[#faf9fc] to-[#f3f0fc]">
+        <div className="w-12 h-12 border-4 border-[#8558ed] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/" replace />;
@@ -184,6 +194,14 @@ function AppRoutes() {
       {user && user.role === "applicant" && <Chatbot />}
     </>
   );
+}
+
+// Personal assessment links carry the hiring tracker's candidate id
+// (e.g. ?cid=IFA-0043). Captured once on load and attached to the profile
+// and assessment so scores join to the recruiting pipeline automatically.
+const capturedCid = new URLSearchParams(window.location.search).get('cid');
+if (capturedCid) {
+  localStorage.setItem('ifa_tracker_cid', capturedCid);
 }
 
 function App() {

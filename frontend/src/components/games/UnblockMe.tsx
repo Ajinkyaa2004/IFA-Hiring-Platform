@@ -1,13 +1,25 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { useTabSwitchDetection } from '@/hooks/useTabSwitchDetection';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Car, Target, Sparkles, Zap, Star, Trophy, MousePointer, Keyboard, CheckCircle2 } from 'lucide-react';
 
+export interface LevelDetail {
+  level: number;
+  moves: number;
+  optimalMoves: number;
+  timeSec: number;
+}
+
 interface UnblockMeProps {
-  onComplete: (score: number, totalMoves: number, failed?: boolean, failureReason?: string) => void;
+  onComplete: (
+    score: number,
+    totalMoves: number,
+    failed?: boolean,
+    failureReason?: string,
+    details?: { levelDetails: LevelDetail[] }
+  ) => void;
   timeRemaining: number;
   isTrialMode?: boolean;
+  devMode?: boolean;
 }
 
 type Block = {
@@ -26,7 +38,7 @@ type Level = {
   blocks: Block[];
 };
 
-export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining, isTrialMode = false }) => {
+export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining, isTrialMode = false, devMode = false }) => {
   const GRID_SIZE = 6;
   // Responsive cell size based on screen width
   const getCellSize = () => {
@@ -39,7 +51,6 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
   };
   const [CELL_SIZE, setCellSize] = useState(getCellSize());
   const TOTAL_TIME = 300;
-  const navigate = useNavigate();
 
   const [currentLevel, setCurrentLevel] = useState(0);
   const [blocks, setBlocks] = useState<Block[]>([]);
@@ -62,157 +73,15 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
   const hasInitializedRef = useRef(false);
   const hasCompletedRef = useRef(false);
 
-  // Tab switch detection - only enabled when not in trial mode
-  useTabSwitchDetection({
-    maxViolations: 3,
-    enabled: !isTrialMode,
-    onDisqualified: () => {
-      onComplete(puzzlesCompleted, totalMoves, true, 'Disqualified due to tab switching violations');
-      navigate('/applicant/assessment');
-    },
-  });
+  // Tab-switch detection is handled centrally by GameWrapper — a second
+  // listener here would double-count every switch.
 
   const allLevels: Level[] = [
-    // Easy Levels (1-10)
+    // ---- Scored set: positions 0-16, fixed ramp, identical for every candidate ----
     {
       name: 'Level 1',
       difficulty: 'Easy',
-      optimalMoves: 7,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 4, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 3, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 4, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 1, col: 0, length: 3, isHorizontal: true, isTarget: false },
-        { id: 8, row: 3, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false },
-      ],
-    },
-    {
-      name: 'Level 2',
-      difficulty: 'Easy',
-      optimalMoves: 9,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 3, col: 1, length: 3, isHorizontal: false, isTarget: false },
-        { id: 5, row: 2, col: 2, length: 3, isHorizontal: false, isTarget: false },
-        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
-        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
-      ],
-    },
-    {
-      name: 'Level 3',
-      difficulty: 'Easy',
-      optimalMoves: 11,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 3, col: 1, length: 3, isHorizontal: false, isTarget: false },
-        { id: 5, row: 2, col: 2, length: 3, isHorizontal: false, isTarget: false },
-        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
-        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 4',
-      difficulty: 'Easy',
-      optimalMoves: 8,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 3, col: 1, length: 3, isHorizontal: false, isTarget: false },
-        { id: 5, row: 2, col: 2, length: 3, isHorizontal: false, isTarget: false },
-        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
-        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 5',
-      difficulty: 'Easy',
-      optimalMoves: 10,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 3, row: 0, col: 3, length: 3, isHorizontal: true, isTarget: false },
-        { id: 4, row: 3, col: 5, length: 3, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 6, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 7, row: 4, col: 0, length: 3, isHorizontal: true, isTarget: false },
-        { id: 8, row: 3, col: 4, length: 3, isHorizontal: false, isTarget: false },
-        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 3, col: 0, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 6',
-      difficulty: 'Easy',
-      optimalMoves: 12,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 3, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 4, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 8, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 7',
-      difficulty: 'Easy',
-      optimalMoves: 9,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 2, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 4, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 5, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 8, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 3, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 4, col: 2, length: 3, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 8',
-      difficulty: 'Easy',
-      optimalMoves: 11,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 4, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 0, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 7, row: 3, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 4, col: 3, length: 3, isHorizontal: true, isTarget: false },
-        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
-      ],
-    },
-    {
-      name: 'Level 9',
-      difficulty: 'Easy',
-      optimalMoves: 10,
+      optimalMoves: 2, // solver-verified minimum
       blocks: [
         { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
@@ -225,111 +94,26 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       ],
     },
     {
-      name: 'Level 10',
+      name: 'Level 2',
       difficulty: 'Easy',
-      optimalMoves: 13,
-      blocks: [
-        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 2, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 0, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 4, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 1, col: 2, length: 3, isHorizontal: true, isTarget: false },
-        { id: 8, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false }
-      ],
-    },
-    // Hard Levels (11-20)
-    {
-      name: 'Level 11',
-      difficulty: 'Hard',
-      optimalMoves: 15,
-      blocks: [
-        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 2, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 2, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 11, row: 0, col: 5, length: 3, isHorizontal: false, isTarget: false },
-        { id: 12, row: 4, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 7, row: 3, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
-      ],
-    },
-    {
-      name: 'Level 12',
-      difficulty: 'Hard',
-      optimalMoves: 18,
-      blocks: [
-        { id: 1, row: 2, col: 3, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 3, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 3, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 7, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 5, col: 0, length: 3, isHorizontal: true, isTarget: false },
-      ],
-    },
-    {
-      name: 'Level 13',
-      difficulty: 'Hard',
-      optimalMoves: 16,
+      optimalMoves: 3, // solver-verified minimum
       blocks: [
         { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 8, row: 3, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 9, row: 4, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 4, row: 3, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 6, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 7, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 4, length: 2, isHorizontal: true, isTarget: false },
       ],
     },
     {
-      name: 'Level 14',
-      difficulty: 'Hard',
-      optimalMoves: 17,
-      blocks: [
-        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
-        { id: 8, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 15',
-      difficulty: 'Hard',
-      optimalMoves: 19,
-      blocks: [
-        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 4, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 0, length: 0, isHorizontal: false, isTarget: false },
-        { id: 5, row: 4, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 2, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
-        { id: 8, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 16',
-      difficulty: 'Hard',
-      optimalMoves: 20,
+      name: 'Level 3',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
       blocks: [
         { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
@@ -344,9 +128,286 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       ],
     },
     {
+      name: 'Level 4',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 4, row: 0, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 6, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 1, col: 5, length: 2, isHorizontal: false, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 5',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 2, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 1, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 4, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 3, col: 1, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 4, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 7, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 6',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 5, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 7, row: 4, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 7',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 4, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 6, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 4, col: 3, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 5, col: 1, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 8',
+      difficulty: 'Easy',
+      optimalMoves: 5, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 4, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 3, col: 0, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 8, row: 5, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 10, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 9',
+      difficulty: 'Easy',
+      optimalMoves: 6, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 2, col: 0, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 0, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 1, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 10',
+      difficulty: 'Easy',
+      optimalMoves: 6, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 4, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 4, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 0, col: 3, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 1, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 3, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 11',
+      difficulty: 'Easy',
+      optimalMoves: 6, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 12',
+      difficulty: 'Easy',
+      optimalMoves: 7, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 13',
+      difficulty: 'Easy',
+      optimalMoves: 7, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 2, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 5, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 6, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 3, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 14',
+      difficulty: 'Hard',
+      optimalMoves: 9, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 3, col: 1, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 2, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 15',
+      difficulty: 'Hard',
+      optimalMoves: 9, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 3, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 16',
+      difficulty: 'Hard',
+      optimalMoves: 9, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 4, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 3, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 5, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
       name: 'Level 17',
       difficulty: 'Hard',
-      optimalMoves: 21,
+      optimalMoves: 14, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 3, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 3, col: 0, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 4, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 8, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    // ---- Trial set: positions 17-19, never used in scored runs ----
+    {
+      name: 'Level 18',
+      difficulty: 'Easy',
+      optimalMoves: 2, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 4, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 0, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 3, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 0, col: 4, length: 2, isHorizontal: false, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 19',
+      difficulty: 'Easy',
+      optimalMoves: 3, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 3, row: 0, col: 3, length: 3, isHorizontal: true, isTarget: false },
+        { id: 4, row: 3, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 6, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 7, row: 4, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 3, col: 4, length: 3, isHorizontal: false, isTarget: false },
+        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 3, col: 0, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 20',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 4, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 0, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 7, row: 3, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 4, col: 3, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    // ---- Reserve levels: positions 20+, unused by default ----
+    {
+      name: 'Level 21',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
       blocks: [
         { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
@@ -359,13 +420,89 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
         { id: 9, row: 3, col: 2, length: 3, isHorizontal: true, isTarget: false },
         { id: 10, row: 4, col: 1, length: 3, isHorizontal: true, isTarget: false },
         { id: 11, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false },
-
       ],
     },
     {
-      name: 'Level 18',
-      difficulty: 'Hard',
-      optimalMoves: 22,
+      name: 'Level 22',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 2, col: 1, length: 4, isHorizontal: false, isTarget: false },
+        { id: 3, row: 1, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
+        { id: 6, row: 3, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 11, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 23',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 4, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 6, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 4, col: 3, length: 3, isHorizontal: true, isTarget: false },
+        { id: 9, row: 5, col: 1, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 24',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 4, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 7, row: 4, col: 3, length: 3, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 25',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 1, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 4, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 3, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 3, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 26',
+      difficulty: 'Easy',
+      optimalMoves: 4, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 5, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 8, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 9, row: 3, col: 0, length: 3, isHorizontal: false, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 27',
+      difficulty: 'Easy',
+      optimalMoves: 5, // solver-verified minimum
       blocks: [
         { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
@@ -382,103 +519,10 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       ],
     },
     {
-      name: 'Level 19',
-      difficulty: 'Hard',
-      optimalMoves: 23,
+      name: 'Level 28',
+      difficulty: 'Easy',
+      optimalMoves: 5, // solver-verified minimum
       blocks: [
-        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 2, col: 1, length: 4, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
-        { id: 6, row: 3, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 11, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
-      ],
-    },
-    {
-      name: 'Level 20',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 2, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 6, row: 0, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 7, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
-        { id: 8, row: 2, col: 5, length: 3, isHorizontal: false, isTarget: false },
-        { id: 9, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 11, row: 4, col: 0, length: 0, isHorizontal: true, isTarget: false },
-        { id: 12, row: 5, col: 4, length: 2, isHorizontal: true, isTarget: false },
-      ],
-    },
-    {
-      name: 'Level 21',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        // The Target Car (Horizontal, Length 2, must exit from the right side)
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-
-        // Blocking Vehicles
-        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false }, // Vertical
-        { id: 3, row: 0, col: 5, length: 3, isHorizontal: false, isTarget: false }, // Vertical
-        { id: 4, row: 3, col: 4, length: 2, isHorizontal: false, isTarget: false }, // Vertical
-        { id: 5, row: 1, col: 2, length: 3, isHorizontal: true, isTarget: false }, // Horizontal
-        { id: 6, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false }, // Horizontal
-        { id: 7, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false }, // Horizontal
-        { id: 8, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false }, // Horizontal
-        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false }, // Horizontal
-        { id: 10, row: 5, col: 4, length: 2, isHorizontal: true, isTarget: false }  // Horizontal
-      ],
-    },
-    {
-      name: 'Level 22',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 4, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 3, col: 1, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 5, col: 0, length: 3, isHorizontal: true, isTarget: false },
-        { id: 8, row: 5, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 23',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-
-        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 4, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
-        { id: 5, row: 2, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 6, row: 3, col: 2, length: 3, isHorizontal: true, isTarget: false },
-        { id: 7, row: 4, col: 3, length: 0, isHorizontal: false, isTarget: false },
-        { id: 8, row: 5, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 0, col: 4, length: 2, isHorizontal: false, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 24',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-
         { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
         { id: 3, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
@@ -487,298 +531,237 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
         { id: 6, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false },
         { id: 7, row: 4, col: 1, length: 3, isHorizontal: true, isTarget: false },
         { id: 8, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
-        { id: 9, row: 2, col: 0, length: 0, isHorizontal: true, isTarget: false },
-        { id: 10, row: 4, col: 0, length: 2, isHorizontal: false, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 25',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 1, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 4, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
-        { id: 6, row: 3, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 7, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 8, row: 5, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 9, row: 2, col: 2, length: 0, isHorizontal: true, isTarget: false },
-        { id: 10, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 26',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 4, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 4, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 6, row: 0, col: 0, length: 0, isHorizontal: false, isTarget: false },
-        { id: 7, row: 0, col: 3, length: 3, isHorizontal: true, isTarget: false },
-        { id: 8, row: 1, col: 0, length: 3, isHorizontal: true, isTarget: false },
-        { id: 9, row: 3, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 27',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 1, col: 0, length: 0, isHorizontal: false, isTarget: false },
-        { id: 5, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false },
-        { id: 9, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 28',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 4, row: 0, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 0, row: 0, col: 0, length: 0, isHorizontal: false, isTarget: false }, // Corrected ID 1 to 5
-        { id: 0, row: 0, col: 0, length: 0, isHorizontal: false, isTarget: false },
-        { id: 6, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 4, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 5, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 0, row: 0, col: 0, length: 0, isHorizontal: true, isTarget: false },
-        { id: 10, row: 1, col: 5, length: 2, isHorizontal: false, isTarget: false }
+        { id: 10, row: 4, col: 0, length: 2, isHorizontal: false, isTarget: false },
       ],
     },
     {
       name: 'Level 29',
-      difficulty: 'Hard',
-      optimalMoves: 25,
+      difficulty: 'Easy',
+      optimalMoves: 5, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 3, row: 0, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 4, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 6, row: 3, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 30',
+      difficulty: 'Easy',
+      optimalMoves: 6, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 3, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 3, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 3, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 7, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 5, col: 0, length: 3, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 31',
+      difficulty: 'Easy',
+      optimalMoves: 6, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 6, row: 0, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
+        { id: 8, row: 2, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 9, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 12, row: 5, col: 4, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 32',
+      difficulty: 'Easy',
+      optimalMoves: 6, // solver-verified minimum
       blocks: [
         { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
         { id: 3, row: 0, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 1, col: 0, length: 0, isHorizontal: false, isTarget: false },
         { id: 5, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
         { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
         { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
         { id: 8, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false },
         { id: 9, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 30',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 4, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 6, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 4, col: 3, length: 3, isHorizontal: true, isTarget: false },
-        { id: 9, row: 5, col: 1, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 31',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 2, length: 3, isHorizontal: false, isTarget: false },
-        { id: 3, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 5, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 6, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 5, col: 3, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 32',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 2, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 4, row: 1, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 3, col: 1, length: 3, isHorizontal: false, isTarget: false },
-        { id: 6, row: 4, col: 2, length: 3, isHorizontal: true, isTarget: false },
-        { id: 7, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false }
+        { id: 10, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
       ],
     },
     {
       name: 'Level 33',
-      difficulty: 'Hard',
-      optimalMoves: 25,
+      difficulty: 'Easy',
+      optimalMoves: 6, // solver-verified minimum
       blocks: [
         { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 4, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 5, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false },
-        { id: 0, row: 0, col: 0, length: 0, isHorizontal: false, isTarget: false },
-        { id: 7, row: 4, col: 3, length: 3, isHorizontal: true, isTarget: false }
+        { id: 2, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 3, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 1, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 3, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 7, row: 3, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 0, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 9, row: 4, col: 3, length: 3, isHorizontal: true, isTarget: false },
       ],
-    }, {
+    },
+    {
       name: 'Level 34',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 1, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 1, col: 2, length: 3, isHorizontal: true, isTarget: false },
-        { id: 4, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 3, col: 0, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 5, col: 3, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    }, {
-      name: 'Level 35',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { "id": 1, "row": 2, "col": 0, "length": 2, "isHorizontal": true, "isTarget": true },
-        { "id": 2, "row": 0, "col": 2, "length": 2, "isHorizontal": true, "isTarget": false },
-        { "id": 3, "row": 1, "col": 2, "length": 2, "isHorizontal": false, "isTarget": false },
-        { "id": 4, "row": 1, "col": 5, "length": 3, "isHorizontal": false, "isTarget": false },
-        { "id": 5, "row": 1, "col": 0, "length": 2, "isHorizontal": true, "isTarget": false },
-        { "id": 6, "row": 3, "col": 0, "length": 3, "isHorizontal": true, "isTarget": false },
-        { "id": 7, "row": 3, "col": 3, "length": 2, "isHorizontal": true, "isTarget": false },
-        { "id": 0, "row": 2, "col": 3, "length": 1, "isHorizontal": false, "isTarget": false },
-        { "id": 9, "row": 4, "col": 3, "length": 3, "isHorizontal": true, "isTarget": false }
-      ],
-    },
-    {
-      name: 'Level 36',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { "id": 1, "row": 2, "col": 0, "length": 2, "isHorizontal": true, "isTarget": true },
-        { "id": 2, "row": 1, "col": 2, "length": 2, "isHorizontal": false, "isTarget": false },
-        { "id": 3, "row": 2, "col": 4, "length": 2, "isHorizontal": false, "isTarget": false },
-        { "id": 4, "row": 1, "col": 4, "length": 1, "isHorizontal": true, "isTarget": false },
-        { "id": 5, "row": 1, "col": 0, "length": 2, "isHorizontal": true, "isTarget": false },
-        { "id": 6, "row": 3, "col": 0, "length": 3, "isHorizontal": true, "isTarget": false },
-        { "id": 7, "row": 4, "col": 2, "length": 3, "isHorizontal": true, "isTarget": false },
-        { "id": 8, "row": 5, "col": 1, "length": 3, "isHorizontal": true, "isTarget": false },
-        { "id": 9, "row": 0, "col": 4, "length": 2, "isHorizontal": true, "isTarget": false }
-      ],
-    },
-    {
-      name: 'Level 37',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { "id": 1, "row": 2, "col": 0, "length": 2, "isHorizontal": true, "isTarget": true },
-        { "id": 2, "row": 4, "col": 4, "length": 2, "isHorizontal": true, "isTarget": false },
-        { "id": 3, "row": 0, "col": 3, "length": 3, "isHorizontal": false, "isTarget": false },
-        { "id": 4, "row": 1, "col": 5, "length": 3, "isHorizontal": false, "isTarget": false },
-        { "id": 5, "row": 1, "col": 0, "length": 3, "isHorizontal": true, "isTarget": false },
-        { "id": 6, "row": 3, "col": 0, "length": 2, "isHorizontal": true, "isTarget": false },
-        { "id": 7, "row": 3, "col": 3, "length": 1, "isHorizontal": true, "isTarget": false },
-        { "id": 8, "row": 2, "col": 2, "length": 2, "isHorizontal": false, "isTarget": false }
-      ],
-    },
-    {
-      name: 'Level 38',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 1, length: 1, isHorizontal: true, isTarget: true },
-        { id: 2, row: 1, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 2, col: 4, length: 3, isHorizontal: false, isTarget: false },
-        { id: 4, row: 0, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 5, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 6, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 8, row: 1, col: 3, length: 3, isHorizontal: false, isTarget: false },
-        { id: 9, row: 3, col: 0, length: 3, isHorizontal: false, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 39',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 3, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 4, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 3, col: 0, length: 3, isHorizontal: false, isTarget: false },
-        { id: 6, row: 4, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
-        { id: 8, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
-        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
-        { id: 10, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    },
-    {
-      name: 'Level 40',
-      difficulty: 'Hard',
-      optimalMoves: 25,
-      blocks: [
-        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
-        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false },
-        { id: 4, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
-        { id: 5, row: 1, col: 1, length: 3, isHorizontal: true, isTarget: false },
-        { id: 6, row: 2, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 7, row: 4, col: 1, length: 2, isHorizontal: true, isTarget: false },
-        { id: 8, row: 4, col: 3, length: 3, isHorizontal: true, isTarget: false },
-        { id: 9, row: 5, col: 1, length: 2, isHorizontal: true, isTarget: false }
-      ],
-    }, {
-      name: 'Level 41',
-      difficulty: 'Hard',
-      optimalMoves: 25,
+      difficulty: 'Easy',
+      optimalMoves: 6, // solver-verified minimum
       blocks: [
         { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
         { id: 2, row: 1, col: 2, length: 2, isHorizontal: false, isTarget: false },
-        { id: 3, row: 3, col: 2, length: 1, isHorizontal: false, isTarget: false },
         { id: 4, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false },
         { id: 5, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
         { id: 6, row: 1, col: 4, length: 3, isHorizontal: false, isTarget: false },
         { id: 7, row: 3, col: 0, length: 2, isHorizontal: true, isTarget: false },
         { id: 8, row: 4, col: 3, length: 3, isHorizontal: true, isTarget: false },
         { id: 9, row: 4, col: 0, length: 2, isHorizontal: false, isTarget: false },
-        { id: 10, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false }
+        { id: 10, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 35',
+      difficulty: 'Easy',
+      optimalMoves: 7, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 4, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 4, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 1, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 0, col: 2, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 36',
+      difficulty: 'Easy',
+      optimalMoves: 8, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 4, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 1, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 3, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 4, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 1, col: 0, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 3, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 2, length: 3, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 37',
+      difficulty: 'Hard',
+      optimalMoves: 9, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 3, col: 1, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 2, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 38',
+      difficulty: 'Hard',
+      optimalMoves: 9, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 3, col: 1, length: 3, isHorizontal: false, isTarget: false },
+        { id: 5, row: 2, col: 2, length: 3, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 2, length: 3, isHorizontal: true, isTarget: false },
+        { id: 6, row: 1, col: 1, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 4, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 2, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 39',
+      difficulty: 'Hard',
+      optimalMoves: 9, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 2, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 2, col: 0, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 0, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 11, row: 0, col: 5, length: 3, isHorizontal: false, isTarget: false },
+        { id: 12, row: 4, col: 2, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 3, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 7, row: 3, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 8, row: 4, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 5, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 5, col: 3, length: 3, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 40',
+      difficulty: 'Hard',
+      optimalMoves: 9, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 3, row: 2, col: 4, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 2, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 2, col: 3, length: 3, isHorizontal: false, isTarget: false },
+        { id: 8, row: 3, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 9, row: 4, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 2, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 1, col: 4, length: 2, isHorizontal: true, isTarget: false },
+      ],
+    },
+    {
+      name: 'Level 41',
+      difficulty: 'Hard',
+      optimalMoves: 10, // solver-verified minimum
+      blocks: [
+        { id: 1, row: 2, col: 0, length: 2, isHorizontal: true, isTarget: true },
+        { id: 2, row: 1, col: 2, length: 3, isHorizontal: false, isTarget: false },
+        { id: 3, row: 4, col: 5, length: 2, isHorizontal: false, isTarget: false },
+        { id: 5, row: 1, col: 3, length: 2, isHorizontal: false, isTarget: false },
+        { id: 7, row: 0, col: 1, length: 2, isHorizontal: false, isTarget: false },
+        { id: 4, row: 4, col: 0, length: 2, isHorizontal: true, isTarget: false },
+        { id: 6, row: 5, col: 1, length: 3, isHorizontal: true, isTarget: false },
+        { id: 8, row: 0, col: 4, length: 2, isHorizontal: true, isTarget: false },
+        { id: 9, row: 3, col: 3, length: 2, isHorizontal: true, isTarget: false },
+        { id: 10, row: 4, col: 2, length: 3, isHorizontal: true, isTarget: false },
       ],
     },
   ];
 
-  const DEV_MODE = true;
+  // Debug helpers are only available when the /dev sandbox explicitly opts in
+  const DEV_MODE = devMode;
 
   const selectedLevels = useMemo(() => {
     if (DEV_MODE) {
       return allLevels;
     }
     if (isTrialMode) {
-      // Trial mode: Pick 3 random levels from all 20
-      const shuffled = [...allLevels].sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, 3);
-    } else {
-      // Actual game: Pick 17 random levels from all 20
-      const shuffled = [...allLevels].sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, 17);
+      // Trial mode: fixed easy trio (positions 17-19), never part of the scored set
+      return allLevels.slice(17, 20);
     }
+    // Scored mode: fixed 17-level ramp (positions 0-16) — identical for every candidate
+    return allLevels.slice(0, 17);
   }, [isTrialMode]);
 
   useEffect(() => {
@@ -795,11 +778,22 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Per-level breakdown (moves vs solver-verified optimum, seconds per level)
+  // for persistence and continuous ranking.
+  const buildLevelDetails = (): { levelDetails: LevelDetail[] } => ({
+    levelDetails: selectedLevels.slice(0, puzzlesCompleted).map((lvl, i) => ({
+      level: i + 1,
+      moves: levelMoves[i] ?? 0,
+      optimalMoves: lvl.optimalMoves,
+      timeSec: levelTimes[i] ?? 0,
+    })),
+  });
+
   // Handle time running out
   useEffect(() => {
     if (timeRemaining === 0 && !isTrialMode && !hasCompletedRef.current) {
       hasCompletedRef.current = true;
-      onComplete(puzzlesCompleted, totalMoves);
+      onComplete(puzzlesCompleted, totalMoves, undefined, undefined, buildLevelDetails());
     }
   }, [timeRemaining, isTrialMode, puzzlesCompleted, totalMoves, onComplete]);
 
@@ -808,7 +802,7 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
     if (allLevelsComplete && !hasCompletedRef.current) {
       hasCompletedRef.current = true;
       // Pass the number of levels completed (puzzlesCompleted) and total moves
-      onComplete(puzzlesCompleted, totalMoves);
+      onComplete(puzzlesCompleted, totalMoves, undefined, undefined, buildLevelDetails());
     }
   }, [allLevelsComplete, puzzlesCompleted, totalMoves, onComplete]);
 
@@ -851,11 +845,6 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
     return 5;
   };
 
-  const calculateTotalScore = () => {
-    // Total score = numberOfPuzzlesSolved × 5
-    return puzzlesCompleted * 5;
-  };
-
   const checkWin = (currentBlocks: Block[]) => {
     const target = currentBlocks.find((b) => b.isTarget);
     if (target && target.col === GRID_SIZE - target.length) {
@@ -874,8 +863,8 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
       const levelScoreVal = calculateLevelScore(currentLevel, moves, timeSpent);
       setLastLevelScore(levelScoreVal);
 
-      const newScore = calculateTotalScore();
-      setScore(newScore);
+      // +1: puzzlesCompleted state has not landed yet on this render
+      setScore((puzzlesCompleted + 1) * 5);
 
       if (currentLevel < selectedLevels.length - 1) {
         setTimeout(() => loadLevel(currentLevel + 1), 2500);
@@ -1215,8 +1204,8 @@ export const UnblockMe: React.FC<UnblockMeProps> = ({ onComplete, timeRemaining,
                 const levelScoreVal = calculateLevelScore(currentLevel, moves, timeSpent);
                 setLastLevelScore(levelScoreVal);
 
-                const newScore = calculateTotalScore();
-                setScore(newScore);
+                // +1: puzzlesCompleted state has not landed yet on this render
+                setScore((puzzlesCompleted + 1) * 5);
 
                 if (currentLevel < selectedLevels.length - 1) {
                   setTimeout(() => loadLevel(currentLevel + 1), 2500);

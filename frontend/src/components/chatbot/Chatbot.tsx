@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageCircle, X, Send, ThumbsUp, ThumbsDown, Sparkles, Loader2 } from 'lucide-react';
 import { ChatMessage } from '@/types';
 import { generateId } from '@/lib/utils';

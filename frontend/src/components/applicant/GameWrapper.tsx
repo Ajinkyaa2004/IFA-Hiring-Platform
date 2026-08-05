@@ -17,6 +17,15 @@ import { motion } from 'framer-motion';
 
 const GAME_DURATION = 300; // 5 minutes in seconds
 
+// Games whose 5-minute window is enforced by this wrapper
+const TIMED_GAMES: GameType[] = ['minesweeper', 'unblock-me', 'water-capacity'];
+
+// A game counts as completed only when it has real timeSpent data — an
+// in-progress attempt record (startedAt, no timeSpent) must NOT unlock the
+// next game or read as finished.
+const isGameDone = (g: GameScore | null | undefined): boolean =>
+  !!g && g.timeSpent !== undefined && g.timeSpent !== null;
+
 // Utility function to detect mobile devices
 const isMobileDevice = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
@@ -39,6 +48,8 @@ export const GameWrapper: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isGamePaused, setIsGamePaused] = useState(false);
   const [isMobile] = useState(isMobileDevice());
+  // Wall-clock start of the current attempt (survives refresh via MongoDB)
+  const attemptStartedAtRef = React.useRef<string | null>(null);
 
   // ✅ UPDATED: Now async with MongoDB
   useEffect(() => {
@@ -64,7 +75,7 @@ export const GameWrapper: React.FC = () => {
         }
 
         // Check if game is unlocked (new order: Unblock Me -> Minesweeper -> Water Capacity -> Question Game)
-        if (gameType === 'minesweeper' && !assessment.games['unblock-me']) {
+        if (gameType === 'minesweeper' && !isGameDone(assessment.games['unblock-me'])) {
           toast.warning('Please complete Unblock Me first to unlock this game.', {
             duration: 3000,
             icon: '🔒',
@@ -72,7 +83,7 @@ export const GameWrapper: React.FC = () => {
           navigate('/applicant/assessment');
           return;
         }
-        if (gameType === 'water-capacity' && !assessment.games.minesweeper) {
+        if (gameType === 'water-capacity' && !isGameDone(assessment.games.minesweeper)) {
           toast.warning('Please complete Minesweeper first to unlock this game.', {
             duration: 3000,
             icon: '🔒',
@@ -81,7 +92,7 @@ export const GameWrapper: React.FC = () => {
           return;
         }
         if (gameType === 'question-game' &&
-          (!assessment.games['unblock-me'] || !assessment.games.minesweeper || !assessment.games['water-capacity'])) {
+          (!isGameDone(assessment.games['unblock-me']) || !isGameDone(assessment.games.minesweeper) || !isGameDone(assessment.games['water-capacity']))) {
           toast.warning('Please complete Unblock Me, Minesweeper, and Water Capacity first to unlock Question Game.', {
             duration: 4000,
             icon: '🔒',
@@ -93,7 +104,7 @@ export const GameWrapper: React.FC = () => {
         // Check if already completed (for scored mode)
         // Game is only completed if it has actual timeSpent data (was actually played)
         const gameData = assessment.games[gameType];
-        const isActuallyCompleted = gameData && gameData.timeSpent !== undefined && gameData.timeSpent !== null;
+        const isActuallyCompleted = isGameDone(gameData);
 
         if (!isTrial && isActuallyCompleted) {
           toast.info('You have already completed this game.', {
@@ -102,6 +113,45 @@ export const GameWrapper: React.FC = () => {
           });
           navigate('/applicant/assessment');
           return;
+        }
+
+        // In-progress attempt found (page was refreshed or closed mid-game):
+        // resume the ORIGINAL 5-minute window from wall-clock startedAt.
+        // A refresh can never grant fresh time.
+        if (!isTrial && !isActuallyCompleted && gameData?.startedAt && TIMED_GAMES.includes(gameType)) {
+          const elapsed = Math.floor((Date.now() - new Date(gameData.startedAt).getTime()) / 1000);
+          const remaining = GAME_DURATION - elapsed;
+
+          if (remaining <= 5) {
+            // The window burned out while they were away — record the attempt
+            // as failed so it is visible, then send them back.
+            assessment.games[gameType] = {
+              ...gameData,
+              gameType,
+              puzzlesCompleted: 0,
+              timeSpent: GAME_DURATION,
+              completedAt: new Date().toISOString(),
+              trialCompleted: false,
+              inProgress: false,
+              failed: true,
+              failureReason: 'Attempt window expired after leaving the game mid-attempt',
+            };
+            await saveAssessment(assessment);
+            toast.error('Your 5-minute window for this game expired after you left mid-attempt. The attempt has been recorded.', {
+              duration: 6000,
+              icon: '⏰',
+            });
+            navigate('/applicant/assessment');
+            return;
+          }
+
+          attemptStartedAtRef.current = gameData.startedAt;
+          setTimeRemaining(remaining);
+          setTabSwitchCount(gameData.tabSwitches || 0);
+          toast.warning(`Resuming your earlier attempt — ${formatTime(remaining)} left on the clock.`, {
+            duration: 5000,
+            icon: '⏱️',
+          });
         }
       } catch (error) {
         console.error('Error checking game access:', error);
@@ -162,8 +212,26 @@ export const GameWrapper: React.FC = () => {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [gameStarted, isTrial, isGamePaused, isMobile]);
 
+  // Persist the violation count on the in-progress record so a refresh
+  // cannot silently clear earned warnings.
+  const persistTabSwitches = async (count: number) => {
+    try {
+      if (!user || !gameType) return;
+      const assessment = await getAssessmentByUserId(user.id);
+      if (!assessment) return;
+      const g = assessment.games[gameType];
+      if (!g || isGameDone(g)) return;
+      assessment.games[gameType] = { ...g, tabSwitches: count };
+      await saveAssessment(assessment);
+    } catch (error) {
+      console.error('Failed to persist tab switch count:', error);
+    }
+  };
+
   // Tab switching detection (works on BOTH mobile and desktop)
-  // User gets 2 warnings, then disqualified on 3rd tab switch
+  // User gets 2 warnings, then disqualified on 3rd tab switch.
+  // This wrapper is the ONLY listener — the game components must not run
+  // their own detection or every switch counts double.
   useEffect(() => {
     if (!gameStarted || isTrial) return;
 
@@ -182,12 +250,18 @@ export const GameWrapper: React.FC = () => {
                 const assessment = await getAssessmentByUserId(user.id);
                 if (!assessment) return;
 
+                const prior = assessment.games[gameType];
                 const gameScore: GameScore = {
+                  ...(prior || {}),
                   gameType,
                   puzzlesCompleted: 0,
                   timeSpent: GAME_DURATION - timeRemaining,
                   completedAt: new Date().toISOString(),
                   trialCompleted: false,
+                  inProgress: false,
+                  attempts: prior?.attempts || 1,
+                  startedAt: prior?.startedAt || attemptStartedAtRef.current || undefined,
+                  tabSwitches: newCount,
                   failed: true,
                   failureReason: 'Disqualified for excessive tab switching',
                 };
@@ -214,6 +288,7 @@ export const GameWrapper: React.FC = () => {
               icon: '⚠️',
             });
             setTimeout(() => setShowWarning(false), 3000);
+            void persistTabSwitches(newCount);
           }
           return newCount;
         });
@@ -224,9 +299,49 @@ export const GameWrapper: React.FC = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [gameStarted, navigate, isTrial, user, gameType, timeRemaining]);
 
+  // Writes the "attempt started" record BEFORE the game begins, so every
+  // attempt is visible in the database and a refresh resumes the same window.
+  const beginAttempt = async (): Promise<void> => {
+    if (!user || !gameType || isTrial) return;
+
+    try {
+      const assessment = await getAssessmentByUserId(user.id);
+      if (!assessment) return;
+
+      const existing = assessment.games[gameType];
+      if (isGameDone(existing)) return; // completed while we were on this screen
+
+      const startedAt = existing?.startedAt || new Date().toISOString();
+      attemptStartedAtRef.current = startedAt;
+
+      assessment.games[gameType] = {
+        ...(existing || {}),
+        gameType,
+        puzzlesCompleted: existing?.puzzlesCompleted ?? 0,
+        trialCompleted: false,
+        inProgress: true,
+        startedAt,
+        attempts: (existing?.attempts || 0) + 1,
+        tabSwitches: existing?.tabSwitches || 0,
+      };
+      await saveAssessment(assessment);
+
+      // If this is a resumed attempt, the clock kept running while the ready
+      // screen was open — recompute what is actually left.
+      if (TIMED_GAMES.includes(gameType)) {
+        const elapsed = Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000);
+        const remaining = GAME_DURATION - elapsed;
+        setTimeRemaining(Math.max(1, Math.min(GAME_DURATION, remaining)));
+      }
+    } catch (error) {
+      console.error('Failed to record attempt start:', error);
+    }
+  };
+
   const enterFullscreen = async () => {
     // On mobile devices, skip fullscreen and start game directly
     if (isMobile) {
+      await beginAttempt();
       setGameStarted(true);
       toast.success('Game started! Good luck!', {
         duration: 2000,
@@ -239,6 +354,7 @@ export const GameWrapper: React.FC = () => {
     try {
       await document.documentElement.requestFullscreen();
       setIsFullscreen(true);
+      await beginAttempt();
       setGameStarted(true);
       toast.success('Game started! Good luck!', {
         duration: 2000,
@@ -278,7 +394,13 @@ export const GameWrapper: React.FC = () => {
   };
 
   // ✅ UPDATED: Now async with MongoDB
-  const handleGameComplete = useCallback(async (score: number, metadata: number, failed?: boolean, failureReason?: string) => {
+  const handleGameComplete = useCallback(async (
+    score: number,
+    metadata: number,
+    failed?: boolean,
+    failureReason?: string,
+    details?: Partial<GameScore>,
+  ) => {
     if (!user || !gameType) {
       return;
     }
@@ -304,6 +426,9 @@ export const GameWrapper: React.FC = () => {
         return;
       }
 
+      // Carry the attempt-integrity fields recorded at start into the result
+      const prior = assessment.games[gameType];
+
       const gameScore: GameScore = {
         gameType,
         // For question game, score is the actual points, for others it's puzzles completed
@@ -314,18 +439,24 @@ export const GameWrapper: React.FC = () => {
         maxScore: gameType === 'question-game' ? metadata : undefined, // Store max score for question game
         completedAt: new Date().toISOString(),
         trialCompleted: false,
+        inProgress: false,
+        attempts: prior?.attempts || 1,
+        startedAt: prior?.startedAt || attemptStartedAtRef.current || undefined,
+        tabSwitches: tabSwitchCount || prior?.tabSwitches || 0,
         failed: failed || false,
         failureReason: failureReason,
+        // Per-level / per-puzzle metrics reported by the game component
+        ...(details || {}),
       };
 
       assessment.games[gameType] = gameScore;
 
       // Calculate total score if all games completed
-      if (assessment.games.minesweeper && assessment.games['unblock-me'] && assessment.games['water-capacity']) {
+      if (isGameDone(assessment.games.minesweeper) && isGameDone(assessment.games['unblock-me']) && isGameDone(assessment.games['water-capacity'])) {
         assessment.totalScore = calculateTotalScore(
-          assessment.games.minesweeper.puzzlesCompleted,
-          assessment.games['unblock-me'].puzzlesCompleted,
-          assessment.games['water-capacity'].puzzlesCompleted,
+          assessment.games.minesweeper!.puzzlesCompleted,
+          assessment.games['unblock-me']!.puzzlesCompleted,
+          assessment.games['water-capacity']!.puzzlesCompleted,
           assessment.games['question-game']?.puzzlesCompleted || 0
         );
         assessment.completedAt = new Date().toISOString();
@@ -357,11 +488,11 @@ export const GameWrapper: React.FC = () => {
         icon: '❌',
       });
     }
-  }, [user, gameType, timeRemaining, navigate, isTrial]);
+  }, [user, gameType, timeRemaining, navigate, isTrial, tabSwitchCount]);
 
   const quitGame = () => {
-    toast.warning('Progress will not be saved if you quit now!', {
-      duration: 3000,
+    toast.warning('Quitting does not reset your 5-minute window — the clock keeps running until it expires!', {
+      duration: 4000,
       icon: '⚠️',
       action: {
         label: 'Quit Anyway',
@@ -693,19 +824,19 @@ export const GameWrapper: React.FC = () => {
                   <ul className="space-y-1.5 sm:space-y-2 text-gray-700 text-xs sm:text-sm">
                     <li className="flex items-start gap-2">
                       <span className="text-teal-600 font-bold">•</span>
-                      <span>Calculate the total water capacity trapped between blocks</span>
+                      <span>Each puzzle shows jugs of different capacities — measure the exact target amount in the highlighted jug</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-teal-600 font-bold">•</span>
-                      <span>Enter your answer in the input field and click Submit</span>
+                      <span><strong>Fill</strong> a jug to the top, <strong>Empty</strong> it completely, or <strong>Pour</strong> one jug into another</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-teal-600 font-bold">•</span>
-                      <span>Water fills up to the lowest surrounding wall height</span>
+                      <span>Pouring stops when the source jug is empty or the destination jug is full</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-teal-600 font-bold">•</span>
-                      <span>Solve as many puzzles as possible within 5 minutes</span>
+                      <span>Fewer steps is better — solve as many puzzles as possible within 5 minutes</span>
                     </li>
                   </ul>
                 </motion.div>

@@ -15,11 +15,9 @@ interface DashboardChartsProps {
 }
 
 export const DashboardCharts: React.FC<DashboardChartsProps> = ({
-  profiles,
   assessments
 }) => {
   // Calculate statistics
-  const totalCandidates = profiles.length;
   const totalAssessments = assessments.length;
   const completedAssessments = assessments.filter(a => a.completedAt).length;
   const inProgressAssessments = assessments.filter(a => !a.completedAt && Object.values(a.games).some(game => game !== null)).length;
@@ -28,17 +26,17 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   // Calculate average scores for completed assessments
   const completedGames = assessments.filter(a => a.completedAt);
   const averageScores = {
-    minesweeper: completedGames.length > 0 
-      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games.minesweeper?.score || 0), 0) / completedGames.length)
+    minesweeper: completedGames.length > 0
+      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games.minesweeper?.puzzlesCompleted || 0), 0) / completedGames.length)
       : 0,
-    unblockMe: completedGames.length > 0 
-      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['unblock-me']?.score || 0), 0) / completedGames.length)
+    unblockMe: completedGames.length > 0
+      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['unblock-me']?.puzzlesCompleted || 0), 0) / completedGames.length)
       : 0,
-    waterCapacity: completedGames.length > 0 
-      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['water-capacity']?.score || 0), 0) / completedGames.length)
+    waterCapacity: completedGames.length > 0
+      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['water-capacity']?.puzzlesCompleted || 0), 0) / completedGames.length)
       : 0,
-    questionGame: completedGames.length > 0 
-      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['question-game']?.score || 0), 0) / completedGames.length)
+    questionGame: completedGames.length > 0
+      ? Math.round(completedGames.reduce((sum, a) => sum + (a.games['question-game']?.puzzlesCompleted || 0), 0) / completedGames.length)
       : 0,
   };
 

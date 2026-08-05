@@ -529,7 +529,7 @@ export const SignIn: React.FC = () => {
           <div className="flex items-center justify-center gap-4 text-xs">
             <span className="text-gray-500">Powered by IFA SkillQuest</span>
             <span className="text-gray-400">•</span>
-            <span className="text-gray-500">Support Available 24/7</span>
+            <span className="text-gray-500">Questions? Contact the IFA recruitment team</span>
           </div>
         </motion.div>
       </motion.div>

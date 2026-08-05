@@ -26,27 +26,53 @@ export interface ApplicantProfile {
   resumeLink?: string;
   websiteLink?: string;
   profileCompleted: boolean;
+  trackerCid?: string; // hiring-tracker candidate id from the ?cid= link
   createdAt: string;
 }
 
 export type GameType = "minesweeper" | "unblock-me" | "water-capacity" | "question-game";
 
+// Per-level breakdown for Unblock Me — moves vs solver-verified optimum
+export interface LevelDetail {
+  level: number;
+  moves: number;
+  optimalMoves: number;
+  timeSec: number;
+}
+
 export interface GameScore {
   gameType: GameType;
   puzzlesCompleted: number;
-  timeSpent: number; // in seconds
+  // Absent while an attempt is in progress — its presence is the
+  // "actually completed" marker used across the app.
+  timeSpent?: number; // in seconds
   errorRate?: number;
   minimumMoves?: number;
   maxScore?: number; // For question game to store max possible score
-  completedAt: string;
+  completedAt?: string;
   trialCompleted: boolean;
   failed?: boolean;
   failureReason?: string;
+  // Attempt integrity: written when the candidate presses Start, so a
+  // mid-game refresh resumes the same 5-minute window instead of a fresh one.
+  startedAt?: string;
+  attempts?: number;
+  tabSwitches?: number;
+  inProgress?: boolean;
+  // Granular metrics for continuous ranking
+  levelDetails?: LevelDetail[];   // unblock-me
+  puzzleSteps?: number[];         // water-capacity
+  puzzleScores?: number[];        // water-capacity
+  wrongFlags?: number;            // minesweeper
+  levelsCompleted?: number;       // minesweeper (score is points, this is levels)
 }
 
 export interface Assessment {
   userId: string;
   candidateId: string;
+  // Candidate id assigned by the hiring tracker (?cid= link) — the join key
+  // between platform scores and the recruiting pipeline.
+  trackerCid?: string;
   games: {
     minesweeper: GameScore | null;
     "unblock-me": GameScore | null;
@@ -66,12 +92,14 @@ export interface Assessment {
 
 export interface LeaderboardEntry {
   candidateId: string;
+  trackerCid?: string;
   name: string;
   email: string;
   collegeName: string;
   location: string;
   totalScore: number;
   totalTimeSpent?: number; // Added for tie-breaking display
+  totalExcessMoves?: number; // moves above solver optimum — second tie-breaker
   completedAt: string;
   gameScores: {
     minesweeper: number;
@@ -79,6 +107,20 @@ export interface LeaderboardEntry {
     waterCapacity: number;
     questionGame: number;
   };
+  gameTimes?: {
+    minesweeper: number;
+    unblockMe: number;
+    waterCapacity: number;
+    questionGame: number;
+  };
+  attempts?: {
+    minesweeper: number;
+    unblockMe: number;
+    waterCapacity: number;
+    questionGame: number;
+  };
+  hasFailedGame?: boolean;
+  failureReasons?: string[];
 }
 
 export interface ChatMessage {

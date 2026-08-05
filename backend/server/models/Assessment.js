@@ -10,6 +10,12 @@ const assessmentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // Candidate id assigned by the hiring tracker (?cid= link) — join key
+  // between platform scores and the recruiting pipeline
+  trackerCid: {
+    type: String,
+    default: null,
+  },
   games: {
     minesweeper: {
       type: Object,
