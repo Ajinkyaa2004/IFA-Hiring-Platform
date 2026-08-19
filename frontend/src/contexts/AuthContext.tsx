@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '@/types';
-import { getCurrentUser, setCurrentUser, getUserByGoogleId, saveUser, initializeDefaultAdmin } from '@/lib/storage';
-import { generateId } from '@/lib/utils';
+import { getCurrentUser, setCurrentUser } from '@/lib/storage';
+import { authApi, setAuthToken } from '@/lib/api';
 import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
-  loginWithGoogle: (credential: string, role: UserRole) => Promise<User | null>; // ✅ Changed return type
+  login: (email: string, password: string, role: UserRole) => Promise<User | null>;
+  register: (name: string, email: string, password: string) => Promise<User | null>;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
@@ -19,105 +20,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        await initializeDefaultAdmin();
-        const currentUser = getCurrentUser();
-        if (currentUser) {
-          setUser(currentUser);
-        }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-      } finally {
-        setLoading(false);
+    // Hydrate the session from localStorage (user + JWT survive refreshes)
+    try {
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
       }
-    };
-
-    initAuth();
+    } catch (error) {
+      console.error('Auth initialization error:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // ✅ UPDATED: Now returns the user object
-  const loginWithGoogle = async (credential: string, role: UserRole): Promise<User | null> => {
+  const finishLogin = (loggedIn: User, token: string): User => {
+    setAuthToken(token);
+    setUser(loggedIn);
+    setCurrentUser(loggedIn);
+    return loggedIn;
+  };
+
+  // Email + password sign-in. The portal (`role`) must match the account's
+  // role — an applicant account cannot enter the admin dashboard.
+  const login = async (email: string, password: string, role: UserRole): Promise<User | null> => {
     setLoading(true);
-    
     try {
-      const payload = JSON.parse(atob(credential.split('.')[1]));
-      
-      const googleId = payload.sub;
-      const email = payload.email;
-      const name = payload.name;
-      const picture = payload.picture;
+      const { user: loggedIn, token } = await authApi.login(email, password);
 
-      console.log('🔐 Login attempt:', { email, role, googleId });
-
-      if (role === 'admin') {
-        const adminEmails = [
-          'chiragkhati04@gmail.com',
-          'yashdhiver00@gmail.com',
-          'dhumalajinkya2004@gmail.com',
-          'insightfusionanalytics@gmail.com'
-        ];
-        if (!adminEmails.includes(email)) {
-          toast.error('Unauthorized: Admin access requires a valid admin email');
-          setLoading(false);
-          return null;
-        }
+      if (loggedIn.role !== role) {
+        toast.error(`This account is registered as ${loggedIn.role}, not ${role}.`);
+        return null;
       }
 
-      let existingUser = await getUserByGoogleId(googleId);
-      
-      if (existingUser) {
-        console.log('✅ Existing user found:', existingUser.id);
-        
-        if (existingUser.role !== role) {
-          toast.error(`This account is registered as ${existingUser.role}, not ${role}`);
-          setLoading(false);
-          return null;
-        }
-        
-        existingUser.name = name;
-        existingUser.picture = picture;
-        existingUser.email = email;
-        
-        await saveUser(existingUser);
-        setUser(existingUser);
-        setCurrentUser(existingUser);
-        
-        setLoading(false);
-        return existingUser; // ✅ Return user
-      }
-
-      const newUser: User = {
-        id: generateId(),
-        googleId,
-        email,
-        name,
-        picture,
-        role,
-        createdAt: new Date().toISOString(),
-      };
-
-      console.log('🆕 Creating new user:', newUser.id);
-
-      await saveUser(newUser);
-      setUser(newUser);
-      setCurrentUser(newUser);
-      
-      console.log('✅ User created and logged in:', newUser.id);
-      
-      setLoading(false);
-      return newUser; // ✅ Return user
+      return finishLogin(loggedIn, token);
     } catch (error) {
-      console.error('❌ Google login error:', error);
-      toast.error('Login failed. Please try again.');
+      toast.error(error instanceof Error ? error.message : 'Login failed. Please try again.');
+      return null;
+    } finally {
       setLoading(false);
-      return null; // ✅ Return null on error
+    }
+  };
+
+  // Applicant self-registration (admins are seeded server-side only)
+  const register = async (name: string, email: string, password: string): Promise<User | null> => {
+    setLoading(true);
+    try {
+      const { user: created, token } = await authApi.register(name, email, password);
+      return finishLogin(created, token);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Registration failed. Please try again.');
+      return null;
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = () => {
     setUser(null);
     setCurrentUser(null);
+    setAuthToken(null);
     toast.success('Logged out successfully');
   };
 
@@ -125,7 +86,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         user,
-        loginWithGoogle,
+        login,
+        register,
         logout,
         isAuthenticated: !!user,
         loading,

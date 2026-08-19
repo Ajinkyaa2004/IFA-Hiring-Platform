@@ -3,6 +3,7 @@ import {
     getSettings,
     updateSettings,
 } from '../controllers/settingsController.js';
+import { requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -10,6 +11,6 @@ const router = express.Router();
 router.get('/', getSettings);
 
 // PUT /api/settings - Update application settings (admin only)
-router.put('/', updateSettings);
+router.put('/', requireAdmin, updateSettings);
 
 export default router;

@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { UserRole } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { toast } from "sonner";
 import { getSettings } from "@/lib/settingsApi";
 import { AnnouncementCard } from "@/components/ui/AnnouncementCard";
@@ -86,9 +85,13 @@ const FloatingIcon: React.FC<{
 export const SignIn: React.FC = () => {
   const { role } = useParams<{ role: UserRole }>();
   const navigate = useNavigate();
-  const { loginWithGoogle } = useAuth();
+  const { login, register } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [announcement, setAnnouncement] = useState<{ title: string; content: string } | null>(null);
   const [showAnnouncementCard, setShowAnnouncementCard] = useState(true);
 
@@ -110,16 +113,8 @@ export const SignIn: React.FC = () => {
     fetchAnnouncement();
   }, []);
 
-  const handleGoogleSuccess = async (
-    credentialResponse: CredentialResponse
-  ) => {
-    if (!credentialResponse.credential) {
-      toast.error("Google Sign-In failed. Please try again.", {
-        duration: 4000,
-        icon: "❌"
-      });
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     if (!role) {
       toast.error("Invalid role selected", {
@@ -129,24 +124,36 @@ export const SignIn: React.FC = () => {
       return;
     }
 
+    if (!email.trim() || !password) {
+      toast.error("Please enter your email and password.", {
+        duration: 3000,
+        icon: "⚠️"
+      });
+      return;
+    }
+
+    if (isSignUp && !name.trim()) {
+      toast.error("Please enter your full name.", {
+        duration: 3000,
+        icon: "⚠️"
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // ✅ CRITICAL: Wait for login and get user object
-      const loggedInUser = await loginWithGoogle(
-        credentialResponse.credential,
-        role
-      );
+      const loggedInUser = isSignUp
+        ? await register(name.trim(), email.trim(), password)
+        : await login(email.trim(), password, role);
 
       if (loggedInUser) {
-        console.log('✅ User logged in successfully:', loggedInUser.id);
         setShowSuccess(true);
         toast.success(`Welcome! Logging you in as ${getRoleTitle()}...`, {
           duration: 2000,
           icon: "🎉"
         });
 
-        // ✅ CRITICAL: Navigate after user is confirmed
         setTimeout(() => {
           if (role === "admin") {
             navigate("/admin/dashboard");
@@ -156,16 +163,6 @@ export const SignIn: React.FC = () => {
             navigate("/");
           }
         }, 1500);
-      } else {
-        toast.error(
-          role === "admin"
-            ? "Unauthorized: Admin access requires a valid admin email."
-            : "Authentication failed. Please try again or contact support.",
-          {
-            duration: 5000,
-            icon: "🚫"
-          }
-        );
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -176,17 +173,6 @@ export const SignIn: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-
-  const handleGoogleError = () => {
-    toast.error(
-      "Google Sign-In failed. Please check your connection and try again.",
-      {
-        duration: 4000,
-        icon: "❌"
-      }
-    );
   };
 
   const getRoleTitle = () => {
@@ -401,10 +387,10 @@ export const SignIn: React.FC = () => {
 
               <div className="text-center space-y-2">
                 <CardTitle className="text-3xl font-bold bg-gradient-to-r from-game-purple-700 to-game-purple-400 bg-clip-text text-transparent">
-                  Sign In with Google
+                  {isSignUp ? "Create your account" : "Sign In"}
                 </CardTitle>
                 <CardDescription className="text-base text-[#030303]/70">
-                  Sign in as <strong>{getRoleTitle()}</strong> to continue to
+                  {isSignUp ? "Register as" : "Sign in as"} <strong>{getRoleTitle()}</strong> to continue to
                   SkillQuest
                 </CardDescription>
               </div>
@@ -439,43 +425,95 @@ export const SignIn: React.FC = () => {
 
             <CardContent className="pb-8">
               <div className="space-y-6">
-                {/* Google Sign-In Button */}
-                <motion.div
+                {/* Email + Password Form */}
+                <motion.form
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.6 }}
-                  className="flex justify-center"
+                  onSubmit={handleSubmit}
+                  className="space-y-4 max-w-sm mx-auto"
                 >
-                  <div className="w-full max-w-xs">
-                    {loading ? (
-                      <div className="flex items-center justify-center py-3 bg-gray-100 rounded-lg">
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{
-                            repeat: Infinity,
-                            duration: 1,
-                            ease: "linear"
-                          }}
-                          className="w-5 h-5 border-2 border-game-purple-500 border-t-transparent rounded-full"
-                        />
-                        <span className="ml-3 text-gray-600 font-medium">
-                          Processing...
-                        </span>
-                      </div>
-                    ) : (
-                      <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
-                        onError={handleGoogleError}
-                        useOneTap
-                        theme="filled_blue"
-                        size="large"
-                        text="signin_with"
-                        shape="rectangular"
-                        logo_alignment="left"
+                  {isSignUp && (
+                    <div>
+                      <label htmlFor="signin-name" className="block text-sm font-semibold text-gray-700 mb-1">
+                        Full Name
+                      </label>
+                      <input
+                        id="signin-name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        autoComplete="name"
+                        placeholder="Your full name"
+                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-game-purple-500 focus:outline-none focus:ring-2 focus:ring-game-purple-500/20 text-sm"
                       />
-                    )}
+                    </div>
+                  )}
+
+                  <div>
+                    <label htmlFor="signin-email" className="block text-sm font-semibold text-gray-700 mb-1">
+                      Email
+                    </label>
+                    <input
+                      id="signin-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-game-purple-500 focus:outline-none focus:ring-2 focus:ring-game-purple-500/20 text-sm"
+                    />
                   </div>
-                </motion.div>
+
+                  <div>
+                    <label htmlFor="signin-password" className="block text-sm font-semibold text-gray-700 mb-1">
+                      Password
+                    </label>
+                    <input
+                      id="signin-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete={isSignUp ? "new-password" : "current-password"}
+                      placeholder={isSignUp ? "At least 8 characters" : "Your password"}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-game-purple-500 focus:outline-none focus:ring-2 focus:ring-game-purple-500/20 text-sm"
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 text-base font-bold bg-gradient-to-r from-game-purple-700 to-game-purple-400 hover:from-game-purple-800 hover:to-game-purple-500 text-white shadow-lg rounded-xl disabled:opacity-60"
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <motion.span
+                          animate={{ rotate: 360 }}
+                          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full inline-block"
+                        />
+                        Processing...
+                      </span>
+                    ) : isSignUp ? (
+                      "Create Account"
+                    ) : (
+                      "Sign In"
+                    )}
+                  </Button>
+
+                  {role === "applicant" && (
+                    <p className="text-center text-sm text-gray-600">
+                      {isSignUp ? "Already have an account?" : "New candidate?"}{" "}
+                      <button
+                        type="button"
+                        onClick={() => setIsSignUp((v) => !v)}
+                        className="font-bold text-game-purple-700 hover:text-game-purple-500 underline"
+                      >
+                        {isSignUp ? "Sign in" : "Create an account"}
+                      </button>
+                    </p>
+                  )}
+                </motion.form>
 
                 {/* Info Section */}
                 <motion.div
@@ -486,7 +524,7 @@ export const SignIn: React.FC = () => {
                 >
                   <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
                     <div className="h-px flex-1 bg-gray-300"></div>
-                    <span>Secure OAuth 2.0</span>
+                    <span>Secure session (JWT)</span>
                     <div className="h-px flex-1 bg-gray-300"></div>
                   </div>
                   <p className="text-xs text-gray-600 leading-relaxed px-4">
@@ -524,7 +562,7 @@ export const SignIn: React.FC = () => {
           className="text-center mt-6 space-y-3"
         >
           <div className="text-gray-600 text-sm">
-            🔒 Secure Google OAuth 2.0 Authentication
+            🔒 Secure email + password authentication
           </div>
           <div className="flex items-center justify-center gap-4 text-xs">
             <span className="text-gray-500">Powered by IFA SkillQuest</span>

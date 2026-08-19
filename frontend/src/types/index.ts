@@ -1,12 +1,11 @@
 export type UserRole = "applicant" | "admin" | "employee" | "client";
 
-// Updated User interface for Google OAuth
+// Local email + password accounts (JWT sessions)
 export interface User {
   id: string;
   email: string;
-  name: string; // Full name from Google
-  picture?: string; // Profile picture URL from Google
-  googleId: string; // Unique Google ID
+  name: string;
+  picture?: string;
   role: UserRole;
   createdAt: string;
 }

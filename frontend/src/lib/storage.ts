@@ -3,17 +3,6 @@ import { userApi, profileApi, assessmentApi, leaderboardApi } from './api';
 
 // ==================== USER MANAGEMENT ====================
 
-export const saveUser = async (user: User): Promise<void> => {
-  try {
-    await userApi.createOrUpdate(user);
-    // Also save to localStorage for quick access
-    localStorage.setItem('ifa_current_user', JSON.stringify(user));
-  } catch (error) {
-    console.error('Error saving user:', error);
-    throw error;
-  }
-};
-
 export const getUsers = async (): Promise<User[]> => {
   try {
     const users = await userApi.getAll();
@@ -21,34 +10,6 @@ export const getUsers = async (): Promise<User[]> => {
   } catch (error) {
     console.error('Error fetching users:', error);
     return [];
-  }
-};
-
-export const getUserByEmail = async (email: string): Promise<User | null> => {
-  try {
-    const user = await userApi.getByEmail(email);
-    return user;
-  } catch (error) {
-    // ✅ FIXED: Return null for 404 errors (user not found)
-    if (error instanceof Error && (error.message.includes('404') || error.message.includes('not found'))) {
-      return null;
-    }
-    console.error('Error fetching user by email:', error);
-    return null;
-  }
-};
-
-export const getUserByGoogleId = async (googleId: string): Promise<User | null> => {
-  try {
-    const user = await userApi.getByGoogleId(googleId);
-    return user;
-  } catch (error) {
-    // ✅ FIXED: Return null for 404 errors (user not found)
-    if (error instanceof Error && (error.message.includes('404') || error.message.includes('not found'))) {
-      return null;
-    }
-    console.error('Error fetching user by Google ID:', error);
-    return null;
   }
 };
 
@@ -147,27 +108,5 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
   }
 };
 
-// ==================== INITIALIZATION ====================
-
-export const initializeDefaultAdmin = async (): Promise<void> => {
-  try {
-    // Check if admin exists
-    const adminEmail = 'chiragkhati04@gmail.com';
-    const existingAdmin = await getUserByEmail(adminEmail);
-    
-    if (!existingAdmin) {
-      const adminUser: User = {
-        id: 'admin-default',
-        email: adminEmail,
-        name: 'IFA Admin',
-        googleId: 'admin-legacy',
-        role: 'admin',
-        createdAt: new Date().toISOString(),
-      };
-      await saveUser(adminUser);
-      console.log('✅ Default admin user created');
-    }
-  } catch (error) {
-    console.error('Error initializing default admin:', error);
-  }
-};
+// Admin accounts are seeded server-side (backend/scripts/seedAuthUsers.js) —
+// the client never creates privileged users.

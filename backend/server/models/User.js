@@ -6,6 +6,8 @@ const userSchema = new mongoose.Schema({
     unique: true,
     required: true,
   },
+  // Legacy field from the Google OAuth era. New local accounts get a unique
+  // "local:<id>" placeholder so the existing unique index stays satisfied.
   googleId: {
     type: String,
     required: true,
@@ -15,6 +17,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+  },
+  // bcrypt hash — never serialized (stripped in toJSON below)
+  passwordHash: {
+    type: String,
   },
   name: {
     type: String,
@@ -39,6 +45,8 @@ userSchema.set('toJSON', {
   transform: function(doc, ret) {
     delete ret._id;
     delete ret.__v;
+    delete ret.passwordHash;
+    delete ret.googleId;
     return ret;
   }
 });

@@ -1,23 +1,17 @@
 import express from 'express';
-import {
-  createOrUpdateUser,
-  getUserByEmail,
-  getUserByGoogleId,
-  getAllUsers,
-} from '../controllers/userController.js';
+import { getAllUsers } from '../controllers/userController.js';
+import { register, login } from '../controllers/authController.js';
+import { requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// POST /api/users - Create or update user
-router.post('/', createOrUpdateUser);
+// POST /api/users/register - Applicant self-registration (email + password)
+router.post('/register', register);
 
-// GET /api/users - Get all users
-router.get('/', getAllUsers);
+// POST /api/users/login - Email + password login, returns JWT
+router.post('/login', login);
 
-// GET /api/users/email/:email - Get user by email
-router.get('/email/:email', getUserByEmail);
-
-// GET /api/users/google/:googleId - Get user by Google ID
-router.get('/google/:googleId', getUserByGoogleId);
+// GET /api/users - Get all users (admin only)
+router.get('/', requireAdmin, getAllUsers);
 
 export default router;
