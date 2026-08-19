@@ -54,7 +54,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const adminEmails = [
           'chiragkhati04@gmail.com',
           'yashdhiver00@gmail.com',
-          'dhumalajinkya2004@gmail.com'
+          'dhumalajinkya2004@gmail.com',
+          'insightfusionanalytics@gmail.com'
         ];
         if (!adminEmails.includes(email)) {
           toast.error('Unauthorized: Admin access requires a valid admin email');
